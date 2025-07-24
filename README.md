@@ -83,3 +83,124 @@ curl -X GET http://localhost:8080/api/items/user1
 - MySQL
 - Gradle
 - Java 17
+
+# AI 연동 API 사용법
+
+## 1. AI NPC 대화
+- **엔드포인트:** `POST /api.ai/npc`
+- **요청 형식:** JSON
+- **요청 예시:**
+```json
+{
+  "npcId": 1,
+  "prompt": "안녕?",
+  "history": ["안녕하세요.", "무엇을 도와드릴까요?"]
+}
+```
+- **응답 예시:**
+```json
+{
+  "answer": "안녕하세요, 무엇을 도와드릴까요?"
+}
+```
+- **설명:**
+  - npcId: 대화할 NPC의 고유 ID
+  - prompt: 사용자가 NPC에게 보낼 현재 질문/명령
+  - history: 이전 대화 기록(문자열 배열)
+  - answer: AI가 생성한 NPC의 답변
+
+---
+
+## 2. 질감/색 문장 → 이미지 변환
+- **엔드포인트:** `POST /api.ai/material`
+- **요청 형식:** JSON
+- **요청 예시:**
+```json
+{
+  "description": "거친 돌 질감, 파란색"
+}
+```
+- **응답 형식:** multipart/form-data (PNG 파일 2개)
+  - normalMap: normalMap.png (image/png)
+  - baseColor: baseColor.png (image/png)
+- **설명:**
+  - description: 질감/색에 대한 자연어 설명
+  - normalMap: 생성된 노멀맵 이미지 (PNG)
+  - baseColor: 생성된 베이스컬러 이미지 (PNG)
+
+---
+
+## 전체 흐름 요약
+1. 클라이언트가 JSON body로 요청을 보냄
+2. 서버가 요청을 받아 AI 처리(Service에서 구현)
+3. 결과를 JSON 또는 multipart/form-data로 응답
+
+# UE5 연동 게이트웨이 서버 설명
+
+## 개요
+이 서버는 UE5(게임 서버)와 파이썬 AI 서버 사이의 **게이트웨이** 역할만 수행합니다.
+- UE5에서 오는 요청을 받아, 파이썬 AI 서버(`http://localhost:8000`)로 정보를 전달하고,
+- 파이썬 AI 서버의 응답을 UE5로 그대로 반환합니다.
+- AI 관련 실제 처리는 모두 파이썬 서버에서 수행합니다.
+
+---
+
+## 전체 서버 흐름
+
+1. **UE5(클라이언트)가 Spring 서버의 엔드포인트로 요청을 보냄**
+   - 예) `/api/npc`, `/api/material`
+2. **GameEventController가 요청을 받아 GameEventService로 전달**
+3. **GameEventService가 파이썬 AI 서버(`http://localhost:8000`)로 POST 요청을 보냄**
+   - `/api.ai/npc`, `/api.ai/material` 엔드포인트로 전달
+4. **파이썬 AI 서버의 응답을 Spring 서버가 받아서 UE5로 그대로 반환**
+
+---
+
+## 엔드포인트별 상세 흐름
+
+### 1) NPC 대화 요청
+- **엔드포인트:** `POST /api/npc`
+- **요청 예시:**
+```json
+{
+  "npcId": 1,
+  "history": ["안녕", "무엇을 도와줄까?"]
+}
+```
+- **처리 흐름:**
+  1. UE5가 `/api/npc`로 요청
+  2. GameEventController → GameEventService로 전달
+  3. GameEventService가 파이썬 AI 서버(`http://localhost:8000/api.ai/npc`)로 POST 요청
+  4. 파이썬 AI 서버의 응답(JSON)을 UE5로 그대로 반환
+
+### 2) 질감/색 문장 요청
+- **엔드포인트:** `POST /api/material`
+- **요청 예시:**
+```json
+{
+  "description": "거친 돌 질감, 파란색"
+}
+```
+- **처리 흐름:**
+  1. UE5가 `/api/material`로 요청
+  2. GameEventController → GameEventService로 전달
+  3. GameEventService가 파이썬 AI 서버(`http://localhost:8000/api.ai/material`)로 POST 요청
+  4. 파이썬 AI 서버의 응답(multipart/form-data)을 UE5로 그대로 반환
+
+---
+
+## 주요 함수 설명
+
+- `GameEventService.forwardNpcRequest(Map<String, Object> body)`
+  - UE5에서 받은 NPC 대화 정보를 파이썬 AI 서버로 POST 요청
+  - 파이썬 AI 서버의 응답(JSON)을 그대로 반환
+
+- `GameEventService.forwardMaterialRequest(Map<String, Object> body)`
+  - UE5에서 받은 질감/색 정보를 파이썬 AI 서버로 POST 요청
+  - 파이썬 AI 서버의 응답(multipart/form-data)을 그대로 반환
+
+---
+
+## 요약
+- 이 서버는 **비즈니스 로직 없이 게이트웨이 역할**만 수행합니다.
+- 모든 AI 관련 처리는 파이썬 서버에서 담당합니다.

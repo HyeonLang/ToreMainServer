@@ -31,7 +31,7 @@ public class ItemService {
         }
         
         Item item = new Item(itemRequest.getName(), itemRequest.getDescription(), itemRequest.getPrice());
-        item.setUser(userOptional.get());
+
         return itemRepository.save(item);
     }
     
@@ -56,9 +56,7 @@ public class ItemService {
         Optional<Item> itemOptional = itemRepository.findById(id);
         if (itemOptional.isPresent()) {
             Item existingItem = itemOptional.get();
-            existingItem.setName(itemRequest.getName());
-            existingItem.setDescription(itemRequest.getDescription());
-            existingItem.setPrice(itemRequest.getPrice());
+
             return itemRepository.save(existingItem);
         }
         return null;
