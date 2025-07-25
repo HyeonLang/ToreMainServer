@@ -3,13 +3,16 @@ package com.example.toremainserver.entity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
 @Entity
 @Table(name = "items")
 public class Item {
     @Id
-    private String id;
-    private String userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private Long userId;
     private String name;
     private String description;
     private double price;
@@ -17,7 +20,7 @@ public class Item {
 
     public Item() {}
 
-    public Item(String id, String userId, String name, int quantity) {
+    public Item(Long id, Long userId, String name, int quantity) {
         this.id = id;
         this.userId = userId;
         this.name = name;
@@ -31,11 +34,11 @@ public class Item {
         this.price = price;
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

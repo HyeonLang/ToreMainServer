@@ -24,7 +24,7 @@ public class ItemService {
     }
     
     // 아이템 추가
-    public Item createItem(ItemRequest itemRequest, String userId) {
+    public Item createItem(ItemRequest itemRequest, Long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
@@ -36,12 +36,12 @@ public class ItemService {
     }
     
     // 사용자별 아이템 조회
-    public List<Item> getItemsByUserId(String userId) {
+    public List<Item> getItemsByUserId(Long userId) {
         return itemRepository.findByUserId(userId);
     }
     
     // 아이템 조회
-    public Item getItem(String id) {
+    public Item getItem(Long id) {
         Optional<Item> itemOptional = itemRepository.findById(id);
         return itemOptional.orElse(null);
     }
@@ -52,7 +52,7 @@ public class ItemService {
     }
     
     // 아이템 수정
-    public Item updateItem(String id, ItemRequest itemRequest) {
+    public Item updateItem(Long id, ItemRequest itemRequest) {
         Optional<Item> itemOptional = itemRepository.findById(id);
         if (itemOptional.isPresent()) {
             Item existingItem = itemOptional.get();
@@ -63,7 +63,7 @@ public class ItemService {
     }
     
     // 아이템 삭제
-    public boolean deleteItem(String id) {
+    public boolean deleteItem(Long id) {
         if (itemRepository.existsById(id)) {
             itemRepository.deleteById(id);
             return true;
