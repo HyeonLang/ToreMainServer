@@ -1,5 +1,8 @@
 package com.example.toremainserver.controller;
 
+import com.example.toremainserver.dto.NpcChatRequest;
+import com.example.toremainserver.dto.NpcChatResponse;
+import com.example.toremainserver.dto.Ue5NpcRequest;
 import com.example.toremainserver.service.GameEventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,22 +25,31 @@ public class GameEventController {
      *
      * 요청 body 예시:
      * {
+     *   "chatType": "START",
      *   "npcId": 1,
-     *   "history": ["안녕", "무엇을 도와줄까?"]
+     *   "playerName": "모험가",
+     *   "currentPlayerMessage": "안녕하세요",
+     *   "previousChatHistory": [],
+     *   "playerDescription": {
+     *     "class": "전사",
+     *     "level": 10,
+     *     "personality": "용감한",
+     *     "background": "마을을 지키는 전사"
+     *   }
      * }
      *
      * 엔드포인트: POST /api/npc
      *
      * 내부 처리 흐름:
-     * 1. UE5에서 npcId, history를 POST로 받음
-     * 2. (TODO) 필요한 정보(prompt 등) 가공
-     * 3. /api.ai/npc로 POST 요청
-     * 4. 응답을 UE5로 그대로 반환
+     * 1. UE5에서 Ue5NpcRequest 정보를 POST로 받음
+     * 2. DB에서 NPC 정보 조회 (추후 구현)
+     * 3. 완전한 NpcChatRequest 구성
+     * 4. /api.ai/npc로 POST 요청
+     * 5. 응답을 UE5로 그대로 반환
      */
     @PostMapping("/npc")
-    public ResponseEntity<?> ue5Npc(@RequestBody Map<String, Object> body) {
-        // TODO: UE5에서 받은 정보를 가공하거나 추가 처리
-        return gameEventService.forwardNpcRequest(body);
+    public ResponseEntity<NpcChatResponse> ue5Npc(@RequestBody Ue5NpcRequest ue5Request) {
+        return gameEventService.forwardNpcRequest(ue5Request);
     }
 
     /**
