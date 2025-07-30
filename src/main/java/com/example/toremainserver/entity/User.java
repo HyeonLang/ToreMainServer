@@ -23,6 +23,9 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "playername")
+    private String playername;
+
     public User() {}
 
     public User(Long id, String username, String password) {
@@ -36,6 +39,14 @@ public class User {
     public User(String username, String password) {
         this.username = username;
         this.password = password;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public User(String username, String password, String playername) {
+        this.username = username;
+        this.password = password;
+        this.playername = playername;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -54,4 +65,7 @@ public class User {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public String getPlayername() { return playername; }
+    public void setPlayername(String playername) { this.playername = playername; }
 } 

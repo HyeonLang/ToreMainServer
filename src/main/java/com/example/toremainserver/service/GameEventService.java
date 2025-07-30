@@ -3,6 +3,10 @@ package com.example.toremainserver.service;
 import com.example.toremainserver.dto.NpcChatRequest;
 import com.example.toremainserver.dto.NpcChatResponse;
 import com.example.toremainserver.dto.Ue5NpcRequest;
+import com.example.toremainserver.entity.Npc;
+import com.example.toremainserver.entity.User;
+import com.example.toremainserver.repository.NpcRepository;
+import com.example.toremainserver.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -10,16 +14,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class GameEventService {
     private final RestTemplate restTemplate;
     private final String aiServerUrl;
+    private final NpcRepository npcRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    public GameEventService(RestTemplate restTemplate, @Value("${ai.server.url}") String aiServerUrl) {
+    public GameEventService(RestTemplate restTemplate, @Value("${ai.server.url}") String aiServerUrl, NpcRepository npcRepository, UserRepository userRepository) {
         this.restTemplate = restTemplate;
         this.aiServerUrl = aiServerUrl;
+        this.npcRepository = npcRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -30,14 +39,31 @@ public class GameEventService {
      * @return 파이썬 AI 서버의 응답(NpcChatResponse)
      */
     public ResponseEntity<NpcChatResponse> forwardNpcRequest(Ue5NpcRequest ue5Request) {
-        // TODO: DB에서 NPC 정보 조회 (추후 구현)
-        // NpcRepository에서 npcId로 NPC 정보 조회
-        // UserRepository에서 playerName으로 플레이어 정보 조회
+        // DB에서 NPC 정보 조회
+        Optional<Npc> npcOptional = npcRepository.findByNpcId(ue5Request.getNpcId());
         
-        // 임시로 하드코딩된 값들 (추후 DB 조회로 대체)
-        String npcName = "상인"; // DB에서 조회
-        String npcDescription = "마을의 상인"; // DB에서 조회
-        String playerDescription = "모험가"; // DB에서 조회
+        if (npcOptional.isEmpty()) {
+            // NPC가 존재하지 않는 경우 에러 응답
+            return ResponseEntity.badRequest().body(null);
+        }
+        
+        Npc npc = npcOptional.get();
+        String npcName = npc.getName();
+        
+        // npcInfo에서 description 추출
+        String npcDescription = "";
+        if (npc.getNpcInfo() != null && npc.getNpcInfo().containsKey("description")) {
+            npcDescription = (String) npc.getNpcInfo().get("description");
+        }
+        
+        // DB에서 User 정보 조회
+        Optional<User> userOptional = userRepository.findByPlayername(ue5Request.getPlayerName());
+        String playerDescription = "모험가"; // 기본값
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            playerDescription = user.getPlayername() + " (레벨: " + user.getId() + ")";
+        }
+        
         String systemMessages = "시스템 메시지"; // DB에서 조회
         
         // 완전한 NpcChatRequest 구성
