@@ -99,7 +99,7 @@ public class ItemService {
     }
     
     // 사용자에게 소비 아이템 추가
-    public UserConsumableItem addConsumableItemToUser(Long userId, Integer itemId, Integer quantity) {
+    public UserConsumableItem addConsumableItemToUser(Long userId, Integer itemId, Integer quantity, Long localItemId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
@@ -110,12 +110,17 @@ public class ItemService {
             throw new RuntimeException("아이템 정의를 찾을 수 없습니다.");
         }
         
-        UserConsumableItem userItem = new UserConsumableItem(userId, itemId, quantity);
+        // localItemId가 null이면 자동 생성, 아니면 사용자가 제공한 값 사용
+        if (localItemId == null) {
+            localItemId = userId * 1000L + itemId;
+        }
+        
+        UserConsumableItem userItem = new UserConsumableItem(userId, itemId, quantity, localItemId);
         return userConsumableItemRepository.save(userItem);
     }
     
     // 사용자에게 장비 아이템 추가
-    public UserEquipItem addEquipItemToUser(Long userId, Integer itemId) {
+    public UserEquipItem addEquipItemToUser(Long userId, Integer itemId, Long localItemId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
@@ -126,7 +131,12 @@ public class ItemService {
             throw new RuntimeException("아이템 정의를 찾을 수 없습니다.");
         }
         
-        UserEquipItem userItem = new UserEquipItem(userId, itemId);
+        // localItemId가 null이면 자동 생성, 아니면 사용자가 제공한 값 사용
+        if (localItemId == null) {
+            localItemId = userId * 2000L + itemId;
+        }
+        
+        UserEquipItem userItem = new UserEquipItem(userId, itemId, null, null, localItemId);
         return userEquipItemRepository.save(userItem);
     }
 } 

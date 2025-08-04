@@ -92,9 +92,10 @@ public class ItemController {
     public ResponseEntity<UserConsumableItem> addConsumableItemToUser(
             @RequestParam Long userId, 
             @RequestParam Integer itemId, 
-            @RequestParam Integer quantity) {
+            @RequestParam Integer quantity,
+            @RequestParam(required = false) Long localItemId) {
         try {
-            UserConsumableItem userItem = itemService.addConsumableItemToUser(userId, itemId, quantity);
+            UserConsumableItem userItem = itemService.addConsumableItemToUser(userId, itemId, quantity, localItemId);
             return ResponseEntity.ok(userItem);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
@@ -105,9 +106,10 @@ public class ItemController {
     @PostMapping("/equip-item")
     public ResponseEntity<UserEquipItem> addEquipItemToUser(
             @RequestParam Long userId, 
-            @RequestParam Integer itemId) {
+            @RequestParam Integer itemId,
+            @RequestParam(required = false) Long localItemId) {
         try {
-            UserEquipItem userItem = itemService.addEquipItemToUser(userId, itemId);
+            UserEquipItem userItem = itemService.addEquipItemToUser(userId, itemId, localItemId);
             return ResponseEntity.ok(userItem);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();

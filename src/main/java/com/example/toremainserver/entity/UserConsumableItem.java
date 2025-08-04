@@ -19,6 +19,9 @@ public class UserConsumableItem {
     @Column(name = "quantity", columnDefinition = "INT DEFAULT 0")
     private Integer quantity = 0;
     
+    @Column(name = "local_item_id", nullable = false)
+    private Long localItemId;
+    
     // 기본 생성자
     public UserConsumableItem() {}
     
@@ -27,6 +30,13 @@ public class UserConsumableItem {
         this.userId = userId;
         this.itemId = itemId;
         this.quantity = quantity;
+    }
+    
+    public UserConsumableItem(Long userId, Integer itemId, Integer quantity, Long localItemId) {
+        this.userId = userId;
+        this.itemId = itemId;
+        this.quantity = quantity;
+        this.localItemId = localItemId;
     }
     
     // Getter와 Setter
@@ -52,6 +62,14 @@ public class UserConsumableItem {
     
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+    
+    public Long getLocalItemId() {
+        return localItemId;
+    }
+    
+    public void setLocalItemId(Long localItemId) {
+        this.localItemId = localItemId;
     }
     
 }

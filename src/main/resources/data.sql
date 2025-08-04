@@ -11,17 +11,17 @@ VALUES
 (5, '가죽 갑옷', 'EQUIPMENT', '{"defense": 10, "durability": 80}', '가죽으로 만든 갑옷입니다.', false, 1);
 
 -- 사용자 소비 아이템 테이블 초기 데이터
-INSERT INTO user_consumable_items (user_id, item_id, quantity) 
+INSERT INTO user_consumable_items (user_id, item_id, quantity, local_item_id) 
 VALUES 
-(1, 1, 10), -- admin이 체력 물약 10개
-(1, 2, 5),  -- admin이 마나 물약 5개
-(1, 3, 50); -- admin이 강화석 50개
+(1, 1, 10, 1001), -- admin이 체력 물약 10개
+(1, 2, 5, 1002),  -- admin이 마나 물약 5개
+(1, 3, 50, 1003); -- admin이 강화석 50개
 
 -- 사용자 장비 아이템 테이블 초기 데이터
-INSERT INTO user_equip_items (user_id, item_id, enhancement_data, nft_id) 
+INSERT INTO user_equip_items (user_id, item_id, enhancement_data, nft_id, local_item_id) 
 VALUES 
-(1, 4, '{"level": 1, "enhancement": 0}', NULL), -- admin의 철검
-(1, 5, '{"level": 1, "enhancement": 0}', NULL); -- admin의 가죽 갑옷
+(1, 4, '{"level": 1, "enhancement": 0}', NULL, 2001), -- admin의 철검
+(1, 5, '{"level": 1, "enhancement": 0}', NULL, 2002); -- admin의 가죽 갑옷
 
 -- NPC 테이블 초기 데이터
 INSERT INTO npcs (npc_id, name, npc_info) 

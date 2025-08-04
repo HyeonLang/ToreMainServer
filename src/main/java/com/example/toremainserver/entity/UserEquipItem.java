@@ -26,6 +26,9 @@ public class UserEquipItem {
     @Column(name = "nft_id", length = 100)
     private String nftId;
     
+    @Column(name = "local_item_id", nullable = false)
+    private Long localItemId;
+    
     // 기본 생성자
     public UserEquipItem() {}
     
@@ -46,6 +49,14 @@ public class UserEquipItem {
         this.itemId = itemId;
         this.enhancementData = enhancementData;
         this.nftId = nftId;
+    }
+    
+    public UserEquipItem(Long userId, Integer itemId, Map<String, Object> enhancementData, String nftId, Long localItemId) {
+        this.userId = userId;
+        this.itemId = itemId;
+        this.enhancementData = enhancementData;
+        this.nftId = nftId;
+        this.localItemId = localItemId;
     }
     
     // Getter와 Setter
@@ -87,5 +98,13 @@ public class UserEquipItem {
     
     public void setNftId(String nftId) {
         this.nftId = nftId;
+    }
+    
+    public Long getLocalItemId() {
+        return localItemId;
+    }
+    
+    public void setLocalItemId(Long localItemId) {
+        this.localItemId = localItemId;
     }
 } 
