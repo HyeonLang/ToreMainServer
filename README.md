@@ -6,6 +6,9 @@ Spring Boot 기반의 REST API 서버입니다.
 
 - 사용자 인증 (로그인/회원가입)
 - 아이템 관리 (CRUD)
+- NPC 관리 및 대화 시스템
+- 게임 이벤트 처리
+- AI 연동 게이트웨이 기능
 
 ## API 엔드포인트
 
@@ -21,6 +24,10 @@ Spring Boot 기반의 REST API 서버입니다.
 - `PATCH /api/item/{id}` - 아이템 수정
 - `DELETE /api/item/{id}` - 아이템 삭제
 
+### 게임 이벤트 API
+- `POST /api/npc` - NPC 대화 요청
+- `POST /api/material` - 질감/색 문장 → 이미지 변환 요청
+
 ## 데이터베이스 설정
 
 ### MySQL 설정
@@ -34,6 +41,20 @@ Spring Boot 기반의 REST API 서버입니다.
    spring.datasource.username=your_username
    spring.datasource.password=your_password
    ```
+
+### 데이터베이스 스키마
+애플리케이션 시작 시 자동으로 다음 테이블들이 생성됩니다:
+
+- **users**: 사용자 정보 (id, username, password, playername, created_at, updated_at)
+- **npcs**: NPC 정보 (npc_id, name, npc_info JSON)
+- **item_definitions**: 아이템 정의 (id, name, description, type, base_stats JSON, is_stackable, max_stack)
+- **user_consumable_items**: 사용자 소비 아이템 (user_id, item_id, quantity, local_item_id)
+- **user_equip_items**: 사용자 장비 아이템 (id, user_id, item_id, local_item_id, nft_id, enhancement_data JSON)
+
+### 초기 데이터
+애플리케이션 시작 시 다음 초기 데이터가 자동으로 생성됩니다:
+- 기본 관리자 사용자 (username: admin, password: password)
+- 테스트용 NPC 및 아이템 데이터
 
 ## 실행 방법
 
@@ -49,6 +70,14 @@ Spring Boot 기반의 REST API 서버입니다.
 ### 기본 사용자 정보
 - 사용자명: `admin`
 - 비밀번호: `password`
+
+### 데이터베이스 연결 테스트
+애플리케이션 시작 시 자동으로 다음 테스트가 실행됩니다:
+- User 테스트: 기본 관리자 사용자 조회
+- NPC 테스트: NPC 생성 및 조회
+- ItemDefinition 테스트: 아이템 정의 생성 및 조회
+- UserConsumableItem 테스트: 소비 아이템 생성 및 조회
+- UserEquipItem 테스트: 장비 아이템 생성 및 조회
 
 ### API 테스트 예시
 
@@ -83,6 +112,8 @@ curl -X GET http://localhost:8080/api/items/user1
 - MySQL
 - Gradle
 - Java 17
+- Hibernate (JPA 구현체)
+- HikariCP (커넥션 풀)
 
 # AI 연동 API 사용법
 
@@ -204,3 +235,10 @@ curl -X GET http://localhost:8080/api/items/user1
 ## 요약
 - 이 서버는 **비즈니스 로직 없이 게이트웨이 역할**만 수행합니다.
 - 모든 AI 관련 처리는 파이썬 서버에서 담당합니다.
+
+## 최근 수정사항
+
+### 2025-08-05
+- **데이터베이스 엔티티 수정**: `UserConsumableItem`과 `UserEquipItem` 엔티티의 `local_item_id` 필드가 null이 될 수 없도록 설정되어 있어, 테스트 코드에서 해당 값을 추가로 전달하도록 수정
+- **테스트 코드 개선**: 데이터베이스 연결 테스트에서 `localItemId` 값을 포함하여 엔티티 생성하도록 수정
+- **로그 출력 개선**: 생성 성공 메시지에 `LocalItemID` 정보를 추가하여 디버깅 용이성 향상

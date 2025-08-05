@@ -113,11 +113,12 @@ public class ToreMainServerApplication {
             System.out.println("\n--- UserConsumableItem 테스트 ---");
             try {
                 // 소비 아이템 생성 테스트
-                UserConsumableItem testConsumable = new UserConsumableItem(1L, 101, 5);
+                UserConsumableItem testConsumable = new UserConsumableItem(1L, 101, 5, 1001L);
                 UserConsumableItem savedConsumable = userConsumableItemRepository.save(testConsumable);
                 System.out.println("소비 아이템 생성 성공 - UserID: " + savedConsumable.getUserId() + 
                                  ", ItemID: " + savedConsumable.getItemId() + 
-                                 ", 수량: " + savedConsumable.getQuantity());
+                                 ", 수량: " + savedConsumable.getQuantity() +
+                                 ", LocalItemID: " + savedConsumable.getLocalItemId());
                 
                 // 소비 아이템 조회 테스트
                 Optional<UserConsumableItem> foundConsumable = userConsumableItemRepository
@@ -139,11 +140,12 @@ public class ToreMainServerApplication {
                 enhancementData.put("additional_attack", 10);
                 enhancementData.put("additional_defense", 5);
                 
-                UserEquipItem testEquip = new UserEquipItem(1L, 201, enhancementData, "NFT_001");
+                UserEquipItem testEquip = new UserEquipItem(1L, 201, enhancementData, "NFT_001", 2001L);
                 UserEquipItem savedEquip = userEquipItemRepository.save(testEquip);
                 System.out.println("장비 아이템 생성 성공 - ID: " + savedEquip.getId() + 
                                  ", UserID: " + savedEquip.getUserId() + 
-                                 ", ItemID: " + savedEquip.getItemId());
+                                 ", ItemID: " + savedEquip.getItemId() +
+                                 ", LocalItemID: " + savedEquip.getLocalItemId());
                 System.out.println("강화 데이터: " + savedEquip.getEnhancementData());
                 System.out.println("NFT ID: " + savedEquip.getNftId());
                 
