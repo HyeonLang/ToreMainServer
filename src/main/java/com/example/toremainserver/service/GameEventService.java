@@ -66,7 +66,7 @@ public class GameEventService {
         
         String systemMessages = "시스템 메시지"; // DB에서 조회
         
-        // 완전한 NpcChatRequest 구성
+        // 완전한 NpcChatRequest 구성 (previousConversationSummary 포함)
         NpcChatRequest npcChatRequest = new NpcChatRequest(
             convertChatType(ue5Request.getChatType()),
             ue5Request.getNpcId(),
@@ -76,7 +76,8 @@ public class GameEventService {
             playerDescription,
             systemMessages,
             ue5Request.getCurrentPlayerMessage(),
-            convertChatHistory(ue5Request.getPreviousChatHistory())
+            convertChatHistory(ue5Request.getPreviousChatHistory()),
+            ue5Request.getPreviousConversationSummary()
         );
         
         // 요청 헤더 설정 (JSON)
@@ -86,8 +87,15 @@ public class GameEventService {
         // 파이썬 AI 서버의 NPC 엔드포인트로 POST 요청
         String url = aiServerUrl + "/api.ai/npc";
         ResponseEntity<NpcChatResponse> response = restTemplate.postForEntity(url, request, NpcChatResponse.class);
-        // 파이썬 AI 서버의 응답을 그대로 반환
-        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+        
+        // AI 서버 응답 처리
+        NpcChatResponse responseBody = response.getBody();
+        if (responseBody != null) {
+            processChatHistory(responseBody);
+        }
+        
+        // 처리된 응답을 UE5로 반환
+        return ResponseEntity.status(response.getStatusCode()).body(responseBody);
     }
 
     /**
@@ -152,5 +160,21 @@ public class GameEventService {
             ue5ChatHistory.getMessage(),
             ue5ChatHistory.getTimestamp()
         );
+    }
+    
+    /**
+     * AI 서버 응답의 ChatHistory를 처리합니다.
+     * ChatHistory가 40개를 넘으면 마지막 두 개의 ChatRecord를 삭제합니다.
+     * @param response AI 서버 응답 객체
+     */
+    private void processChatHistory(NpcChatResponse response) {
+        if (response.getChatHistory() != null) {
+            List<NpcChatResponse.ChatRecord> chatHistory = response.getChatHistory();
+            if (chatHistory.size() > 40) {
+                // 마지막 두 개의 ChatRecord 삭제
+                chatHistory = chatHistory.subList(0, chatHistory.size() - 2);
+                response.setChatHistory(chatHistory);
+            }
+        }
     }
 } 

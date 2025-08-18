@@ -18,6 +18,11 @@ import com.example.toremainserver.entity.UserEquipItem;
 import java.util.Optional;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import com.example.toremainserver.dto.NpcChatRequest;
+import com.example.toremainserver.dto.NpcChatResponse;
+import com.example.toremainserver.dto.Ue5NpcRequest;
 
 @SpringBootApplication
 public class ToreMainServerApplication {

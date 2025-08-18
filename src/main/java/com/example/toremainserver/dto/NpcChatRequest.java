@@ -74,6 +74,9 @@ public class NpcChatRequest {
     private String playerDescription;
     private String systemMessages;
     
+    // 이전 대화 요약 정보 (20턴 이상의 대화를 요약한 문자열)
+    private String previousConversationSummary;
+    
     // 기본 생성자
     public NpcChatRequest() {}
     
@@ -100,6 +103,23 @@ public class NpcChatRequest {
         this.systemMessages = systemMessages;
         this.currentPlayerMessage = currentPlayerMessage;
         this.previousChatHistory = previousChatHistory;
+    }
+    
+    // 완전한 요청용 생성자 (previousConversationSummary 포함)
+    public NpcChatRequest(ChatType chatType, Long npcId, String npcName, String playerName,
+                         String npcDescription, String playerDescription, String systemMessages,
+                         String currentPlayerMessage, List<ChatHistory> previousChatHistory,
+                         String previousConversationSummary) {
+        this.chatType = chatType;
+        this.npcId = npcId;
+        this.npcName = npcName;
+        this.playerName = playerName;
+        this.npcDescription = npcDescription;
+        this.playerDescription = playerDescription;
+        this.systemMessages = systemMessages;
+        this.currentPlayerMessage = currentPlayerMessage;
+        this.previousChatHistory = previousChatHistory;
+        this.previousConversationSummary = previousConversationSummary;
     }
     
     // Getter와 Setter
@@ -173,5 +193,13 @@ public class NpcChatRequest {
     
     public void setPreviousChatHistory(List<ChatHistory> previousChatHistory) {
         this.previousChatHistory = previousChatHistory;
+    }
+
+    public String getPreviousConversationSummary() {
+        return previousConversationSummary;
+    }
+
+    public void setPreviousConversationSummary(String previousConversationSummary) {
+        this.previousConversationSummary = previousConversationSummary;
     }
 } 

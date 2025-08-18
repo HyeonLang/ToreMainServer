@@ -49,6 +49,9 @@ public class NpcChatResponse {
     private List<ChatRecord> chatHistory;
     private String npcResponse;
     
+    // 이전 대화 요약 정보 (AI 서버에서 받아온 요약 문자열)
+    private String previousConversationSummary;
+    
     // 기본 생성자
     public NpcChatResponse() {}
     
@@ -57,6 +60,14 @@ public class NpcChatResponse {
         this.npcId = npcId;
         this.chatHistory = chatHistory;
         this.npcResponse = npcResponse;
+    }
+    
+    // 생성자 (previousConversationSummary 포함)
+    public NpcChatResponse(Long npcId, List<ChatRecord> chatHistory, String npcResponse, String previousConversationSummary) {
+        this.npcId = npcId;
+        this.chatHistory = chatHistory;
+        this.npcResponse = npcResponse;
+        this.previousConversationSummary = previousConversationSummary;
     }
     
     // Getter와 Setter
@@ -83,4 +94,12 @@ public class NpcChatResponse {
     public void setNpcResponse(String npcResponse) {
         this.npcResponse = npcResponse;
     }
-} 
+    
+    public String getPreviousConversationSummary() {
+        return previousConversationSummary;
+    }
+    
+    public void setPreviousConversationSummary(String previousConversationSummary) {
+        this.previousConversationSummary = previousConversationSummary;
+    }
+}

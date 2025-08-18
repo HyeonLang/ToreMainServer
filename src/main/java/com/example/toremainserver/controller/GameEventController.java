@@ -30,6 +30,7 @@ public class GameEventController {
      *   "playerName": "모험가",
      *   "currentPlayerMessage": "안녕하세요",
      *   "previousChatHistory": [],
+     *   "previousConversationSummary": "이전 대화 요약 정보 (20턴 이상의 대화를 요약한 문자열)",
      *   "playerDescription": {
      *     "class": "전사",
      *     "level": 10,
@@ -38,14 +39,22 @@ public class GameEventController {
      *   }
      * }
      *
+     * 응답 body 예시:
+     * {
+     *   "npcId": 1,
+     *   "chatHistory": [...],
+     *   "npcResponse": "NPC의 응답 메시지",
+     *   "previousConversationSummary": "AI 서버에서 업데이트된 대화 요약 정보"
+     * }
+     *
      * 엔드포인트: POST /api/npc
      *
      * 내부 처리 흐름:
      * 1. UE5에서 Ue5NpcRequest 정보를 POST로 받음
      * 2. DB에서 NPC 정보 조회 (추후 구현)
-     * 3. 완전한 NpcChatRequest 구성
+     * 3. 완전한 NpcChatRequest 구성 (previousConversationSummary 포함)
      * 4. /api.ai/npc로 POST 요청
-     * 5. 응답을 UE5로 그대로 반환
+     * 5. 응답을 UE5로 그대로 반환 (previousConversationSummary 포함)
      */
     @PostMapping("/npc")
     public ResponseEntity<NpcChatResponse> ue5Npc(@RequestBody Ue5NpcRequest ue5Request) {
