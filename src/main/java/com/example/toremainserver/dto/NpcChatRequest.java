@@ -67,6 +67,7 @@ public class NpcChatRequest {
     private String playerName;
     private String currentPlayerMessage;
     private List<ChatHistory> previousChatHistory;
+    private String apiKey; // API 키
     
     // DB에서 가져올 필드들 (추후 구현)
     private String npcName;
@@ -120,6 +121,24 @@ public class NpcChatRequest {
         this.currentPlayerMessage = currentPlayerMessage;
         this.previousChatHistory = previousChatHistory;
         this.previousConversationSummary = previousConversationSummary;
+    }
+    
+    // 완전한 요청용 생성자 (apiKey 포함)
+    public NpcChatRequest(ChatType chatType, Long npcId, String npcName, String playerName,
+                         String npcDescription, String playerDescription, String systemMessages,
+                         String currentPlayerMessage, List<ChatHistory> previousChatHistory,
+                         String previousConversationSummary, String apiKey) {
+        this.chatType = chatType;
+        this.npcId = npcId;
+        this.npcName = npcName;
+        this.playerName = playerName;
+        this.npcDescription = npcDescription;
+        this.playerDescription = playerDescription;
+        this.systemMessages = systemMessages;
+        this.currentPlayerMessage = currentPlayerMessage;
+        this.previousChatHistory = previousChatHistory;
+        this.previousConversationSummary = previousConversationSummary;
+        this.apiKey = apiKey;
     }
     
     // Getter와 Setter
@@ -201,5 +220,13 @@ public class NpcChatRequest {
 
     public void setPreviousConversationSummary(String previousConversationSummary) {
         this.previousConversationSummary = previousConversationSummary;
+    }
+    
+    public String getApiKey() {
+        return apiKey;
+    }
+    
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 } 

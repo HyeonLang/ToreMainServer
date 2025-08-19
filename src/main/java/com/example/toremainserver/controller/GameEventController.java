@@ -36,7 +36,8 @@ public class GameEventController {
      *     "level": 10,
      *     "personality": "용감한",
      *     "background": "마을을 지키는 전사"
-     *   }
+     *   },
+     *   "api_key": "your_api_key_here"
      * }
      *
      * 응답 body 예시:
@@ -67,7 +68,8 @@ public class GameEventController {
      *
      * 요청 body 예시:
      * {
-     *   "description": "거친 돌 질감, 파란색"
+     *   "description": "거친 돌 질감, 파란색",
+     *   "api_key": "your_api_key_here"
      * }
      *
      * 엔드포인트: POST /api/material

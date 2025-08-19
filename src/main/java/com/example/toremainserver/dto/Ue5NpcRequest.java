@@ -69,6 +69,7 @@ public class Ue5NpcRequest {
     private String currentPlayerMessage;
     private List<ChatHistory> previousChatHistory;
     private Map<String, Object> playerDescription; // 플레이어 설명 (JSON)
+    private String apiKey; // API 키
     
     // 이전 대화 요약 정보 (20턴 이상의 대화를 요약한 문자열)
     private String previousConversationSummary;
@@ -99,6 +100,20 @@ public class Ue5NpcRequest {
         this.previousChatHistory = previousChatHistory;
         this.playerDescription = playerDescription;
         this.previousConversationSummary = previousConversationSummary;
+    }
+    
+    // 생성자 (apiKey 포함)
+    public Ue5NpcRequest(ChatType chatType, Long npcId, String playerName,
+                         String currentPlayerMessage, List<ChatHistory> previousChatHistory,
+                         Map<String, Object> playerDescription, String previousConversationSummary, String apiKey) {
+        this.chatType = chatType;
+        this.npcId = npcId;
+        this.playerName = playerName;
+        this.currentPlayerMessage = currentPlayerMessage;
+        this.previousChatHistory = previousChatHistory;
+        this.playerDescription = playerDescription;
+        this.previousConversationSummary = previousConversationSummary;
+        this.apiKey = apiKey;
     }
     
     // Getter와 Setter
@@ -156,5 +171,13 @@ public class Ue5NpcRequest {
 
     public void setPreviousConversationSummary(String previousConversationSummary) {
         this.previousConversationSummary = previousConversationSummary;
+    }
+    
+    public String getApiKey() {
+        return apiKey;
+    }
+    
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 } 

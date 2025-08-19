@@ -66,7 +66,7 @@ public class GameEventService {
         
         String systemMessages = "시스템 메시지"; // DB에서 조회
         
-        // 완전한 NpcChatRequest 구성 (previousConversationSummary 포함)
+        // 완전한 NpcChatRequest 구성 (previousConversationSummary 포함, apiKey 포함)
         NpcChatRequest npcChatRequest = new NpcChatRequest(
             convertChatType(ue5Request.getChatType()),
             ue5Request.getNpcId(),
@@ -77,7 +77,8 @@ public class GameEventService {
             systemMessages,
             ue5Request.getCurrentPlayerMessage(),
             convertChatHistory(ue5Request.getPreviousChatHistory()),
-            ue5Request.getPreviousConversationSummary()
+            ue5Request.getPreviousConversationSummary(),
+            ue5Request.getApiKey()
         );
         
         // 요청 헤더 설정 (JSON)
@@ -102,7 +103,7 @@ public class GameEventService {
      * UE5에서 받은 질감/색 정보를 파이썬 AI 서버로 그대로 전달하고,
      * 파이썬 AI 서버의 응답(multipart/form-data)을 UE5로 반환합니다.
      * (게이트웨이 역할)
-     * @param body UE5에서 받은 description 등 정보
+     * @param body UE5에서 받은 description 등 정보 (api_key 포함)
      * @return 파이썬 AI 서버의 응답(multipart/form-data)
      */
     public ResponseEntity<?> forwardMaterialRequest(Map<String, Object> body) {
