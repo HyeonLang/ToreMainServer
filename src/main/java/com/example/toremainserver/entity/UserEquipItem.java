@@ -23,8 +23,8 @@ public class UserEquipItem {
     @Column(name = "enhancement_data", columnDefinition = "JSON")
     private Map<String, Object> enhancementData;
     
-    @Column(name = "nft_id", length = 100)
-    private String nftId;
+    @Column(name = "nft_id")
+    private Long nftId;
     
     @Column(name = "local_item_id", nullable = false)
     private Long localItemId;
@@ -44,14 +44,14 @@ public class UserEquipItem {
         this.enhancementData = enhancementData;
     }
     
-    public UserEquipItem(Long userId, Integer itemId, Map<String, Object> enhancementData, String nftId) {
+    public UserEquipItem(Long userId, Integer itemId, Map<String, Object> enhancementData, Long nftId) {
         this.userId = userId;
         this.itemId = itemId;
         this.enhancementData = enhancementData;
         this.nftId = nftId;
     }
     
-    public UserEquipItem(Long userId, Integer itemId, Map<String, Object> enhancementData, String nftId, Long localItemId) {
+    public UserEquipItem(Long userId, Integer itemId, Map<String, Object> enhancementData, Long nftId, Long localItemId) {
         this.userId = userId;
         this.itemId = itemId;
         this.enhancementData = enhancementData;
@@ -92,11 +92,11 @@ public class UserEquipItem {
         this.enhancementData = enhancementData;
     }
     
-    public String getNftId() {
+    public Long getNftId() {
         return nftId;
     }
     
-    public void setNftId(String nftId) {
+    public void setNftId(Long nftId) {
         this.nftId = nftId;
     }
     

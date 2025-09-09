@@ -17,7 +17,7 @@ public interface UserEquipItemRepository extends JpaRepository<UserEquipItem, Lo
     List<UserEquipItem> findByUserIdAndItemId(Long userId, Integer itemId);
     
     // NFT ID로 조회
-    Optional<UserEquipItem> findByNftId(String nftId);
+    Optional<UserEquipItem> findByNftId(Long nftId);
     
     // 사용자별 특정 아이템 개수 조회
     Long countByUserIdAndItemId(Long userId, Integer itemId);
