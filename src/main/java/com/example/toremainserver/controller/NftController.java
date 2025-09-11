@@ -1,0 +1,120 @@
+package com.example.toremainserver.controller;
+
+import com.example.toremainserver.dto.NftMintClientRequest;
+import com.example.toremainserver.dto.NftMintClientResponse;
+import com.example.toremainserver.dto.NftBurnClientRequest;
+import com.example.toremainserver.dto.NftBurnClientResponse;
+import com.example.toremainserver.dto.NftTransferClientRequest;
+import com.example.toremainserver.dto.NftTransferClientResponse;
+import com.example.toremainserver.dto.NftListClientRequest;
+import com.example.toremainserver.dto.NftListClientResponse;
+import com.example.toremainserver.service.NftService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/nft")
+public class NftController {
+    
+    private final NftService nftService;
+    
+    @Autowired
+    public NftController(NftService nftService) {
+        this.nftService = nftService;
+    }
+    
+    /**
+     * UE5에서 아이템을 NFT화하는 요청을 받아 블록체인 서버로 전달
+     * 
+     * @param request NFT화 요청 (userId, itemId, userEquipItemId)
+     * @return NFT화 결과 (성공여부, NFT ID 또는 오류 메시지)
+     */
+    @PostMapping("/mint")
+    public ResponseEntity<NftMintClientResponse> mintNft(@Valid @RequestBody NftMintClientRequest request) {
+        try {
+            NftMintClientResponse response = nftService.mintNft(request);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+        } catch (Exception e) {
+            NftMintClientResponse errorResponse = new NftMintClientResponse(false, "서버 오류: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+    
+    /**
+     * UE5에서 NFT화된 아이템을 burn(삭제)하는 요청을 받아 블록체인 서버로 전달
+     * 
+     * @param request NFT burn 요청 (userId, itemId, userEquipItemId, nftId)
+     * @return NFT burn 결과 (성공여부 또는 오류 메시지)
+     */
+    @PostMapping("/burn")
+    public ResponseEntity<NftBurnClientResponse> burnNft(@Valid @RequestBody NftBurnClientRequest request) {
+        try {
+            NftBurnClientResponse response = nftService.burnNft(request);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+        } catch (Exception e) {
+            NftBurnClientResponse errorResponse = new NftBurnClientResponse(false, "서버 오류: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+    
+    /**
+     * UE5에서 NFT화된 아이템을 다른 사용자에게 전송하는 요청을 받아 블록체인 서버로 전달
+     * 
+     * @param request NFT transfer 요청 (userId, itemId, userEquipItemId, nftId, toUserId)
+     * @return NFT transfer 결과 (성공여부 또는 오류 메시지)
+     */
+    @PostMapping("/transfer")
+    public ResponseEntity<NftTransferClientResponse> transferNft(@Valid @RequestBody NftTransferClientRequest request) {
+        try {
+            NftTransferClientResponse response = nftService.transferNft(request);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+        } catch (Exception e) {
+            NftTransferClientResponse errorResponse = new NftTransferClientResponse(false, "서버 오류: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+    
+    /**
+     * UE5에서 사용자의 지갑에 있는 모든 NFT화된 아이템 목록을 조회하고 소유권을 동기화하는 요청을 받아 블록체인 서버로 전달
+     * 
+     * @param userId 사용자 ID
+     * @return 동기화된 NFT 목록 조회 결과 (성공여부, 아이템 데이터 목록 또는 오류 메시지)
+     */
+    @GetMapping("/list/{userId}")
+    public ResponseEntity<NftListClientResponse> getNftList(@PathVariable Long userId) {
+        try {
+            NftListClientRequest request = new NftListClientRequest(userId);
+            NftListClientResponse response = nftService.getNftList(request);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+        } catch (Exception e) {
+            NftListClientResponse errorResponse = new NftListClientResponse(false, "서버 오류: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+}

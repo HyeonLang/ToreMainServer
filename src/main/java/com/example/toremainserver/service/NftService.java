@@ -1,0 +1,413 @@
+package com.example.toremainserver.service;
+
+import com.example.toremainserver.dto.NftMintClientRequest;
+import com.example.toremainserver.dto.NftMintClientResponse;
+import com.example.toremainserver.dto.ContractNftRequest;
+import com.example.toremainserver.dto.ContractNftResponse;
+import com.example.toremainserver.dto.NftBurnClientRequest;
+import com.example.toremainserver.dto.NftBurnClientResponse;
+import com.example.toremainserver.dto.ContractNftBurnRequest;
+import com.example.toremainserver.dto.ContractNftBurnResponse;
+import com.example.toremainserver.dto.NftTransferClientRequest;
+import com.example.toremainserver.dto.NftTransferClientResponse;
+import com.example.toremainserver.dto.ContractNftTransferRequest;
+import com.example.toremainserver.dto.ContractNftTransferResponse;
+import com.example.toremainserver.dto.NftListClientRequest;
+import com.example.toremainserver.dto.NftListClientResponse;
+import com.example.toremainserver.dto.ContractNftListRequest;
+import com.example.toremainserver.dto.ContractNftListResponse;
+import com.example.toremainserver.dto.ItemData;
+import com.example.toremainserver.entity.ItemDefinition;
+import com.example.toremainserver.entity.User;
+import com.example.toremainserver.entity.UserEquipItem;
+import com.example.toremainserver.repository.ItemDefinitionRepository;
+import com.example.toremainserver.repository.UserEquipItemRepository;
+import com.example.toremainserver.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Optional;
+
+@Service
+public class NftService {
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private ItemDefinitionRepository itemDefinitionRepository;
+    
+    @Autowired
+    private UserEquipItemRepository userEquipItemRepository;
+    
+    @Autowired
+    private RestTemplate restTemplate;
+    
+    @Value("${blockchain.server.url:http://localhost:8081}")
+    private String blockchainServerUrl;
+    
+    @Value("${blockchain.contract.address:0x1234567890abcdef}")
+    private String contractAddress;
+    
+    public NftMintClientResponse mintNft(NftMintClientRequest request) {
+        try {
+            // 1. 사용자 정보 조회
+            User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + request.getUserId()));
+            
+            if (user.getWalletAddress() == null || user.getWalletAddress().isEmpty()) {
+                return new NftMintClientResponse(false, "사용자의 지갑 주소가 설정되지 않았습니다");
+            }
+            
+            // 2. 아이템 정의 조회
+            ItemDefinition itemDefinition = itemDefinitionRepository.findById(request.getItemId())
+                .orElseThrow(() -> new RuntimeException("아이템 정의를 찾을 수 없습니다: " + request.getItemId()));
+            
+            // 3. 사용자 장비 아이템 조회
+            UserEquipItem userEquipItem = userEquipItemRepository.findById(request.getUserEquipItemId())
+                .orElseThrow(() -> new RuntimeException("사용자 장비 아이템을 찾을 수 없습니다: " + request.getUserEquipItemId()));
+            
+            // 4. 아이템이 이미 NFT화되었는지 확인
+            if (userEquipItem.getNftId() != null) {
+                return new NftMintClientResponse(false, "이미 NFT화된 아이템입니다");
+            }
+            
+            // 5. 아이템 데이터 구성
+            Map<String, Object> itemData = createItemData(itemDefinition, userEquipItem);
+            
+            // 6. 블록체인 서버로 요청 전송
+            ContractNftRequest contractRequest = new ContractNftRequest(
+                user.getWalletAddress(),
+                contractAddress,
+                request.getItemId(),
+                request.getUserEquipItemId(),
+                itemData
+            );
+            
+            ContractNftResponse contractResponse = sendToBlockchainServer(contractRequest);
+            
+            if (contractResponse.isSuccess()) {
+                // 7. 성공 시 UserEquipItem에 NFT ID 업데이트
+                userEquipItem.setNftId(contractResponse.getNftId());
+                userEquipItemRepository.save(userEquipItem);
+                
+                return new NftMintClientResponse(true, contractResponse.getNftId());
+            } else {
+                return new NftMintClientResponse(false, contractResponse.getErrorMessage());
+            }
+            
+        } catch (Exception e) {
+            return new NftMintClientResponse(false, "NFT화 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+    
+    private Map<String, Object> createItemData(ItemDefinition itemDefinition, UserEquipItem userEquipItem) {
+        Map<String, Object> itemData = new HashMap<>();
+        
+        // 기본 아이템 정보
+        itemData.put("name", itemDefinition.getName());
+        itemData.put("type", itemDefinition.getType().getValue());
+        itemData.put("description", itemDefinition.getDescription());
+        itemData.put("baseStats", itemDefinition.getBaseStats());
+        
+        // 강화 데이터 (있는 경우)
+        if (userEquipItem.getEnhancementData() != null) {
+            itemData.put("enhancementData", userEquipItem.getEnhancementData());
+        }
+        
+        // 메타데이터
+        itemData.put("mintedAt", System.currentTimeMillis());
+        itemData.put("localItemId", userEquipItem.getLocalItemId());
+        
+        return itemData;
+    }
+    
+    private ContractNftResponse sendToBlockchainServer(ContractNftRequest request) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            HttpEntity<ContractNftRequest> entity = new HttpEntity<>(request, headers);
+            
+            String url = blockchainServerUrl + "/api/blockchain/nft/mint";
+            ResponseEntity<ContractNftResponse> response = restTemplate.postForEntity(
+                url, entity, ContractNftResponse.class);
+            
+            return response.getBody();
+            
+        } catch (Exception e) {
+            return new ContractNftResponse(false, "블록체인 서버 통신 오류: " + e.getMessage());
+        }
+    }
+    
+    public NftBurnClientResponse burnNft(NftBurnClientRequest request) {
+        try {
+            // 1. 사용자 정보 조회
+            User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + request.getUserId()));
+            
+            if (user.getWalletAddress() == null || user.getWalletAddress().isEmpty()) {
+                return new NftBurnClientResponse(false, "사용자의 지갑 주소가 설정되지 않았습니다");
+            }
+            
+            // 2. 사용자 장비 아이템 조회
+            UserEquipItem userEquipItem = userEquipItemRepository.findById(request.getUserEquipItemId())
+                .orElseThrow(() -> new RuntimeException("사용자 장비 아이템을 찾을 수 없습니다: " + request.getUserEquipItemId()));
+            
+            // 3. NFT ID 검증
+            if (userEquipItem.getNftId() == null || !userEquipItem.getNftId().equals(request.getNftId())) {
+                return new NftBurnClientResponse(false, "NFT ID가 일치하지 않습니다");
+            }
+            
+            // 4. 블록체인 서버로 burn 요청 전송
+            ContractNftBurnRequest contractRequest = new ContractNftBurnRequest(
+                user.getWalletAddress(),
+                contractAddress,
+                request.getNftId()
+            );
+            
+            ContractNftBurnResponse contractResponse = sendBurnToBlockchainServer(contractRequest);
+            
+            if (contractResponse.isSuccess()) {
+                // 5. 성공 시 UserEquipItem에서 NFT ID 제거
+                userEquipItem.setNftId(null);
+                userEquipItemRepository.save(userEquipItem);
+                
+                return new NftBurnClientResponse(true);
+            } else {
+                return new NftBurnClientResponse(false, contractResponse.getErrorMessage());
+            }
+            
+        } catch (Exception e) {
+            return new NftBurnClientResponse(false, "NFT burn 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+    
+    private ContractNftBurnResponse sendBurnToBlockchainServer(ContractNftBurnRequest request) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            HttpEntity<ContractNftBurnRequest> entity = new HttpEntity<>(request, headers);
+            
+            String url = blockchainServerUrl + "/api/blockchain/nft/burn";
+            ResponseEntity<ContractNftBurnResponse> response = restTemplate.postForEntity(
+                url, entity, ContractNftBurnResponse.class);
+            
+            return response.getBody();
+            
+        } catch (Exception e) {
+            return new ContractNftBurnResponse(false, "블록체인 서버 통신 오류: " + e.getMessage());
+        }
+    }
+    
+    public NftTransferClientResponse transferNft(NftTransferClientRequest request) {
+        try {
+            // 1. 보내는 사용자 정보 조회
+            User fromUser = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("보내는 사용자를 찾을 수 없습니다: " + request.getUserId()));
+            
+            if (fromUser.getWalletAddress() == null || fromUser.getWalletAddress().isEmpty()) {
+                return new NftTransferClientResponse(false, "보내는 사용자의 지갑 주소가 설정되지 않았습니다");
+            }
+            
+            // 2. 받는 사용자 정보 조회
+            User toUser = userRepository.findById(request.getToUserId())
+                .orElseThrow(() -> new RuntimeException("받는 사용자를 찾을 수 없습니다: " + request.getToUserId()));
+            
+            if (toUser.getWalletAddress() == null || toUser.getWalletAddress().isEmpty()) {
+                return new NftTransferClientResponse(false, "받는 사용자의 지갑 주소가 설정되지 않았습니다");
+            }
+            
+            // 3. 보내는 사용자의 장비 아이템 조회
+            UserEquipItem userEquipItem = userEquipItemRepository.findById(request.getUserEquipItemId())
+                .orElseThrow(() -> new RuntimeException("사용자 장비 아이템을 찾을 수 없습니다: " + request.getUserEquipItemId()));
+            
+            // 4. NFT ID 검증
+            if (userEquipItem.getNftId() == null || !userEquipItem.getNftId().equals(request.getNftId())) {
+                return new NftTransferClientResponse(false, "NFT ID가 일치하지 않습니다");
+            }
+            
+            // 5. 같은 사용자에게 전송하는지 확인
+            if (request.getUserId().equals(request.getToUserId())) {
+                return new NftTransferClientResponse(false, "자기 자신에게는 전송할 수 없습니다");
+            }
+            
+            // 6. 블록체인 서버로 transfer 요청 전송
+            ContractNftTransferRequest contractRequest = new ContractNftTransferRequest(
+                fromUser.getWalletAddress(),
+                toUser.getWalletAddress(),
+                contractAddress,
+                request.getNftId()
+            );
+            
+            ContractNftTransferResponse contractResponse = sendTransferToBlockchainServer(contractRequest);
+            
+            if (contractResponse.isSuccess()) {
+                // 7. 성공 시 UserEquipItem의 소유자를 변경
+                userEquipItem.setUserId(request.getToUserId());
+                userEquipItemRepository.save(userEquipItem);
+                
+                return new NftTransferClientResponse(true);
+            } else {
+                return new NftTransferClientResponse(false, contractResponse.getErrorMessage());
+            }
+            
+        } catch (Exception e) {
+            return new NftTransferClientResponse(false, "NFT 전송 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+    
+    private ContractNftTransferResponse sendTransferToBlockchainServer(ContractNftTransferRequest request) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            HttpEntity<ContractNftTransferRequest> entity = new HttpEntity<>(request, headers);
+            
+            String url = blockchainServerUrl + "/api/blockchain/nft/transfer";
+            ResponseEntity<ContractNftTransferResponse> response = restTemplate.postForEntity(
+                url, entity, ContractNftTransferResponse.class);
+            
+            return response.getBody();
+            
+        } catch (Exception e) {
+            return new ContractNftTransferResponse(false, "블록체인 서버 통신 오류: " + e.getMessage(), true);
+        }
+    }
+    
+    
+    private ContractNftListResponse getNftListFromBlockchainServer(ContractNftListRequest request) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            // GET 요청을 위한 URL 파라미터 구성
+            String url = UriComponentsBuilder.fromUriString(blockchainServerUrl + "/api/blockchain/nft/list")
+                .queryParam("walletAddress", request.getWalletAddress())
+                .queryParam("contractAddress", request.getContractAddress())
+                .toUriString();
+            
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            ResponseEntity<ContractNftListResponse> response = restTemplate.exchange(
+                url, HttpMethod.GET, entity, ContractNftListResponse.class);
+            
+            return response.getBody();
+            
+        } catch (Exception e) {
+            return new ContractNftListResponse(false, "블록체인 서버 통신 오류: " + e.getMessage());
+        }
+    }
+    
+    
+    /**
+     * 블록체인에서 받은 NFT ID 목록과 DB의 사용자 소유권을 동기화
+     * 
+     * @param walletAddress 지갑 주소
+     * @param nftIdList 블록체인에서 받은 NFT ID 목록
+     */
+    public void syncNftOwnership(String walletAddress, List<Long> nftIdList) {
+        // 1. 지갑 주소로 사용자 조회
+        User user = userRepository.findByWalletAddress(walletAddress);
+        if (user == null) {
+            throw new RuntimeException("지갑 주소에 해당하는 사용자를 찾을 수 없습니다: " + walletAddress);
+        }
+        
+        // 2. 각 NFT ID에 대해 소유권 확인 및 동기화
+        for (Long nftId : nftIdList) {
+            Optional<UserEquipItem> userEquipItemOpt = userEquipItemRepository.findByNftId(nftId);
+            
+            if (userEquipItemOpt.isPresent()) {
+                UserEquipItem userEquipItem = userEquipItemOpt.get();
+                
+                // 3. 소유권이 다르면 동기화
+                if (!userEquipItem.getUserId().equals(user.getId())) {
+                    userEquipItem.setUserId(user.getId());
+                    userEquipItemRepository.save(userEquipItem);
+                }
+            } else {
+                // 4. NFT ID가 DB에 없으면 로그 기록 (새로 생성된 NFT일 수 있음)
+                System.out.println("Warning: NFT ID " + nftId + " not found in database for wallet " + walletAddress);
+            }
+        }
+    }
+    
+    /**
+     * 사용자의 NFT 목록을 조회하고 소유권을 동기화
+     * 
+     * @param request NFT 목록 조회 요청
+     * @return 동기화된 NFT 목록 응답
+     */
+    public NftListClientResponse getNftList(NftListClientRequest request) {
+        try {
+            // 1. 사용자 정보 조회
+            User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + request.getUserId()));
+            
+            if (user.getWalletAddress() == null || user.getWalletAddress().isEmpty()) {
+                return new NftListClientResponse(false, "사용자의 지갑 주소가 설정되지 않았습니다");
+            }
+            
+            // 2. 블록체인 서버로 NFT 목록 조회 요청
+            ContractNftListRequest contractRequest = new ContractNftListRequest(
+                user.getWalletAddress(),
+                contractAddress
+            );
+            
+            ContractNftListResponse contractResponse = getNftListFromBlockchainServer(contractRequest);
+            
+            if (contractResponse.isSuccess()) {
+                // 3. 소유권 동기화
+                syncNftOwnership(user.getWalletAddress(), contractResponse.getNftIdList());
+                
+                // 4. 아이템 데이터 조회
+                List<ItemData> itemDataList = getItemDataByNftIds(contractResponse.getNftIdList());
+                
+                return new NftListClientResponse(true, itemDataList);
+            } else {
+                return new NftListClientResponse(false, contractResponse.getErrorMessage());
+            }
+            
+        } catch (Exception e) {
+            return new NftListClientResponse(false, "NFT 목록 조회 및 동기화 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * NFT ID 목록으로부터 아이템 데이터를 조회
+     * 
+     * @param nftIds NFT ID 목록
+     * @return 아이템 데이터 목록
+     */
+    private List<ItemData> getItemDataByNftIds(List<Long> nftIds) {
+        List<ItemData> itemDataList = new ArrayList<>();
+        
+        for (Long nftId : nftIds) {
+            // NFT ID로 UserEquipItem 조회
+            Optional<UserEquipItem> userEquipItemOpt = userEquipItemRepository.findByNftId(nftId);
+            
+            if (userEquipItemOpt.isPresent()) {
+                UserEquipItem userEquipItem = userEquipItemOpt.get();
+                ItemData itemData = new ItemData(
+                    userEquipItem.getItemId(),
+                    userEquipItem.getEnhancementData()
+                );
+                itemDataList.add(itemData);
+            }
+        }
+        
+        return itemDataList;
+    }
+}

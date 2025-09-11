@@ -26,6 +26,9 @@ public class User {
     @Column(name = "playername")
     private String playername;
 
+    @Column(name = "wallet_address")
+    private String walletAddress;
+
     public User() {}
 
     public User(Long id, String username, String password) {
@@ -68,4 +71,7 @@ public class User {
 
     public String getPlayername() { return playername; }
     public void setPlayername(String playername) { this.playername = playername; }
+
+    public String getWalletAddress() { return walletAddress; }
+    public void setWalletAddress(String walletAddress) { this.walletAddress = walletAddress; }
 } 

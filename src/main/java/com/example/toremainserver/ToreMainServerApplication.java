@@ -4,7 +4,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.client.RestTemplate;
 import com.example.toremainserver.repository.UserRepository;
 import com.example.toremainserver.repository.NpcRepository;
 import com.example.toremainserver.repository.ItemDefinitionRepository;
@@ -18,11 +17,6 @@ import com.example.toremainserver.entity.UserEquipItem;
 import java.util.Optional;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import com.example.toremainserver.dto.NpcChatRequest;
-import com.example.toremainserver.dto.NpcChatResponse;
-import com.example.toremainserver.dto.Ue5NpcRequest;
 
 @SpringBootApplication
 public class ToreMainServerApplication {
@@ -32,11 +26,6 @@ public class ToreMainServerApplication {
         SpringApplication.run(ToreMainServerApplication.class, args);
     }
 
-    // RestTemplate 빈 등록
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
 
     @Bean
     public CommandLineRunner testDbConnection(

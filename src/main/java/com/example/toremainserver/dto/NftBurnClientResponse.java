@@ -1,0 +1,38 @@
+package com.example.toremainserver.dto;
+
+public class NftBurnClientResponse {
+    
+    private boolean success;
+    private String errorMessage;
+    
+    // 기본 생성자
+    public NftBurnClientResponse() {}
+    
+    // 성공 응답 생성자
+    public NftBurnClientResponse(boolean success) {
+        this.success = success;
+    }
+    
+    // 실패 응답 생성자
+    public NftBurnClientResponse(boolean success, String errorMessage) {
+        this.success = success;
+        this.errorMessage = errorMessage;
+    }
+    
+    // Getter와 Setter
+    public boolean isSuccess() {
+        return success;
+    }
+    
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+    
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+    
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+}
