@@ -1,20 +1,22 @@
-package com.example.toremainserver.dto;
+package com.example.toremainserver.dto.nft;
 
-public class ContractNftBurnResponse {
+public class ContractNftResponse {
     
     private boolean success;
     private String errorMessage;
+    private Long nftId;
     
     // 기본 생성자
-    public ContractNftBurnResponse() {}
+    public ContractNftResponse() {}
     
     // 성공 응답 생성자
-    public ContractNftBurnResponse(boolean success) {
+    public ContractNftResponse(boolean success, Long nftId) {
         this.success = success;
+        this.nftId = nftId;
     }
     
     // 실패 응답 생성자
-    public ContractNftBurnResponse(boolean success, String errorMessage) {
+    public ContractNftResponse(boolean success, String errorMessage) {
         this.success = success;
         this.errorMessage = errorMessage;
     }
@@ -34,5 +36,13 @@ public class ContractNftBurnResponse {
     
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+    
+    public Long getNftId() {
+        return nftId;
+    }
+    
+    public void setNftId(Long nftId) {
+        this.nftId = nftId;
     }
 }

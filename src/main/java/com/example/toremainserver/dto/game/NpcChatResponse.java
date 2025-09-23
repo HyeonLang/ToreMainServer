@@ -1,4 +1,4 @@
-package com.example.toremainserver.dto;
+package com.example.toremainserver.dto.game;
 
 import java.util.List;
 

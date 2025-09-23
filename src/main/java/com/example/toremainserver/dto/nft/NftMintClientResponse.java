@@ -1,24 +1,22 @@
-package com.example.toremainserver.dto;
+package com.example.toremainserver.dto.nft;
 
-import java.util.List;
-
-public class NftListClientResponse {
+public class NftMintClientResponse {
     
     private boolean success;
     private String errorMessage;
-    private List<ItemData> itemDataList;
+    private Long nftId;
     
     // 기본 생성자
-    public NftListClientResponse() {}
+    public NftMintClientResponse() {}
     
     // 성공 응답 생성자
-    public NftListClientResponse(boolean success, List<ItemData> itemDataList) {
+    public NftMintClientResponse(boolean success, Long nftId) {
         this.success = success;
-        this.itemDataList = itemDataList;
+        this.nftId = nftId;
     }
     
     // 실패 응답 생성자
-    public NftListClientResponse(boolean success, String errorMessage) {
+    public NftMintClientResponse(boolean success, String errorMessage) {
         this.success = success;
         this.errorMessage = errorMessage;
     }
@@ -40,11 +38,11 @@ public class NftListClientResponse {
         this.errorMessage = errorMessage;
     }
     
-    public List<ItemData> getItemDataList() {
-        return itemDataList;
+    public Long getNftId() {
+        return nftId;
     }
     
-    public void setItemDataList(List<ItemData> itemDataList) {
-        this.itemDataList = itemDataList;
+    public void setNftId(Long nftId) {
+        this.nftId = nftId;
     }
 }

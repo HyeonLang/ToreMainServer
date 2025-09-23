@@ -28,4 +28,10 @@ INSERT INTO npcs (npc_id, name, npc_info)
 VALUES 
 (1, '상인', '{"description": "마을의 상인", "personality": "친근하고 도움이 되는", "role": "상인", "location": "마을 광장"}'),
 (2, '대장장이', '{"description": "마을의 대장장이", "personality": "성실하고 정확한", "role": "대장장이", "location": "대장간"}'),
-(3, '여관주인', '{"description": "마을의 여관주인", "personality": "따뜻하고 환영하는", "role": "여관주인", "location": "여관"}'); 
+(3, '여관주인', '{"description": "마을의 여관주인", "personality": "따뜻하고 환영하는", "role": "여관주인", "location": "여관"}');
+
+-- NFT 판매 주문 테이블 초기 데이터 (예시)
+INSERT INTO nft_sell_orders (order_id, seller, nft_contract, token_id, price, currency, nonce, deadline, signature, status, created_at) 
+VALUES 
+('sell-order-1', '0x1234567890123456789012345678901234567890', '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd', '1', '1000000000000000000', 'ETH', 1, 1735689600, '0xsignature1', 'ACTIVE', NOW()),
+('sell-order-2', '0x2345678901234567890123456789012345678901', '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd', '2', '2000000000000000000', 'ETH', 2, 1735689600, '0xsignature2', 'ACTIVE', NOW());

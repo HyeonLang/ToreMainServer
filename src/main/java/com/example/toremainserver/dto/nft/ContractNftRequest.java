@@ -1,4 +1,4 @@
-package com.example.toremainserver.dto;
+package com.example.toremainserver.dto.nft;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

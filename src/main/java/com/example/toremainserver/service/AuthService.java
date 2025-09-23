@@ -1,7 +1,7 @@
 package com.example.toremainserver.service;
 
-import com.example.toremainserver.dto.LoginRequest;
-import com.example.toremainserver.dto.LoginResponse;
+import com.example.toremainserver.dto.auth.LoginRequest;
+import com.example.toremainserver.dto.auth.LoginResponse;
 import com.example.toremainserver.entity.User;
 import com.example.toremainserver.repository.UserRepository;
 import com.example.toremainserver.auth.security.JwtTokenProvider;

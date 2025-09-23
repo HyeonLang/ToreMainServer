@@ -1,4 +1,4 @@
-package com.example.toremainserver.dto;
+package com.example.toremainserver.dto.item;
 
 public class ItemRequest {
     private String name;
@@ -39,4 +39,4 @@ public class ItemRequest {
     public void setPrice(double price) {
         this.price = price;
     }
-} 
+}

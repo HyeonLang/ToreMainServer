@@ -1,9 +1,9 @@
-package com.example.toremainserver.dto;
+package com.example.toremainserver.dto.nft;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public class NftBurnClientRequest {
+public class NftTransferClientRequest {
     
     @NotNull(message = "사용자 ID는 필수입니다")
     @Positive(message = "사용자 ID는 양수여야 합니다")
@@ -21,15 +21,20 @@ public class NftBurnClientRequest {
     @Positive(message = "NFT ID는 양수여야 합니다")
     private Long nftId;
     
+    @NotNull(message = "받는 사용자 ID는 필수입니다")
+    @Positive(message = "받는 사용자 ID는 양수여야 합니다")
+    private Long toUserId;
+    
     // 기본 생성자
-    public NftBurnClientRequest() {}
+    public NftTransferClientRequest() {}
     
     // 생성자
-    public NftBurnClientRequest(Long userId, Integer itemId, Long userEquipItemId, Long nftId) {
+    public NftTransferClientRequest(Long userId, Integer itemId, Long userEquipItemId, Long nftId, Long toUserId) {
         this.userId = userId;
         this.itemId = itemId;
         this.userEquipItemId = userEquipItemId;
         this.nftId = nftId;
+        this.toUserId = toUserId;
     }
     
     // Getter와 Setter
@@ -63,5 +68,13 @@ public class NftBurnClientRequest {
     
     public void setNftId(Long nftId) {
         this.nftId = nftId;
+    }
+    
+    public Long getToUserId() {
+        return toUserId;
+    }
+    
+    public void setToUserId(Long toUserId) {
+        this.toUserId = toUserId;
     }
 }

@@ -1,4 +1,4 @@
-package com.example.toremainserver.dto;
+package com.example.toremainserver.dto.auth;
 
 public class LoginRequest {
     private String username;
@@ -29,4 +29,4 @@ public class LoginRequest {
     public void setPassword(String password) {
         this.password = password;
     }
-} 
+}

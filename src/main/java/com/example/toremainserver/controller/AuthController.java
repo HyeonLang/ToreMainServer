@@ -1,7 +1,7 @@
 package com.example.toremainserver.controller;
 
-import com.example.toremainserver.dto.LoginRequest;
-import com.example.toremainserver.dto.LoginResponse;
+import com.example.toremainserver.dto.auth.LoginRequest;
+import com.example.toremainserver.dto.auth.LoginResponse;
 import com.example.toremainserver.entity.User;
 import com.example.toremainserver.service.AuthService;
 import com.example.toremainserver.auth.dto.RefreshTokenRequest;

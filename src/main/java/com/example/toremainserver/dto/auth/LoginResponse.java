@@ -1,4 +1,4 @@
-package com.example.toremainserver.dto;
+package com.example.toremainserver.dto.auth;
 
 /**
  * 로그인 응답 DTO
@@ -120,4 +120,4 @@ public class LoginResponse {
     public void setExpiresIn(long expiresIn) {
         this.expiresIn = expiresIn;
     }
-} 
+}

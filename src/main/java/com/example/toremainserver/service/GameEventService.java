@@ -1,8 +1,8 @@
 package com.example.toremainserver.service;
 
-import com.example.toremainserver.dto.NpcChatRequest;
-import com.example.toremainserver.dto.NpcChatResponse;
-import com.example.toremainserver.dto.Ue5NpcRequest;
+import com.example.toremainserver.dto.game.NpcChatRequest;
+import com.example.toremainserver.dto.game.NpcChatResponse;
+import com.example.toremainserver.dto.game.Ue5NpcRequest;
 import com.example.toremainserver.entity.Npc;
 import com.example.toremainserver.entity.User;
 import com.example.toremainserver.repository.NpcRepository;

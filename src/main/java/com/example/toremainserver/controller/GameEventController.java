@@ -1,8 +1,7 @@
 package com.example.toremainserver.controller;
 
-import com.example.toremainserver.dto.NpcChatRequest;
-import com.example.toremainserver.dto.NpcChatResponse;
-import com.example.toremainserver.dto.Ue5NpcRequest;
+import com.example.toremainserver.dto.game.NpcChatResponse;
+import com.example.toremainserver.dto.game.Ue5NpcRequest;
 import com.example.toremainserver.service.GameEventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

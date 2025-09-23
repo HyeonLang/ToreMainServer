@@ -1,6 +1,6 @@
 package com.example.toremainserver.service;
 
-import com.example.toremainserver.dto.ItemRequest;
+import com.example.toremainserver.dto.item.ItemRequest;
 import com.example.toremainserver.entity.ItemDefinition;
 import com.example.toremainserver.entity.UserConsumableItem;
 import com.example.toremainserver.entity.UserEquipItem;

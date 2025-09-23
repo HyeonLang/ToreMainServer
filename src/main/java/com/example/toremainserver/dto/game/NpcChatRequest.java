@@ -1,4 +1,4 @@
-package com.example.toremainserver.dto;
+package com.example.toremainserver.dto.game;
 
 import java.util.List;
 
@@ -229,4 +229,4 @@ public class NpcChatRequest {
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
     }
-} 
+}

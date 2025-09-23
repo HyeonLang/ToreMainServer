@@ -1,4 +1,4 @@
-package com.example.toremainserver.dto;
+package com.example.toremainserver.dto.game;
 
 import java.util.List;
 import java.util.Map;
@@ -180,4 +180,4 @@ public class Ue5NpcRequest {
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
     }
-} 
+}

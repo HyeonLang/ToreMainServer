@@ -1,13 +1,13 @@
 package com.example.toremainserver.controller;
 
-import com.example.toremainserver.dto.NftMintClientRequest;
-import com.example.toremainserver.dto.NftMintClientResponse;
-import com.example.toremainserver.dto.NftBurnClientRequest;
-import com.example.toremainserver.dto.NftBurnClientResponse;
-import com.example.toremainserver.dto.NftTransferClientRequest;
-import com.example.toremainserver.dto.NftTransferClientResponse;
-import com.example.toremainserver.dto.NftListClientRequest;
-import com.example.toremainserver.dto.NftListClientResponse;
+import com.example.toremainserver.dto.nft.NftMintClientRequest;
+import com.example.toremainserver.dto.nft.NftMintClientResponse;
+import com.example.toremainserver.dto.nft.NftBurnClientRequest;
+import com.example.toremainserver.dto.nft.NftBurnClientResponse;
+import com.example.toremainserver.dto.nft.NftTransferClientRequest;
+import com.example.toremainserver.dto.nft.NftTransferClientResponse;
+import com.example.toremainserver.dto.nft.NftListClientRequest;
+import com.example.toremainserver.dto.nft.NftListClientResponse;
 import com.example.toremainserver.service.NftService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
