@@ -55,7 +55,7 @@ public class NftService {
     @Autowired
     private RestTemplate restTemplate;
     
-    @Value("${blockchain.server.url:http://localhost:8081}")
+    @Value("${blockchain.server.url:http://localhost:3000}")
     private String blockchainServerUrl;
     
     @Value("${blockchain.contract.address:0x1234567890abcdef}")
@@ -409,5 +409,19 @@ public class NftService {
         }
         
         return itemDataList;
+    }
+    
+    /**
+     * 지갑 주소로 NFT화된 아이템 목록 조회
+     */
+    public List<UserEquipItem> getUserNftItems(String walletAddress) {
+        return userEquipItemRepository.findNftItemsByWalletAddress(walletAddress);
+    }
+    
+    /**
+     * 사용자 ID로 NFT화된 아이템 목록 조회
+     */
+    public List<UserEquipItem> getUserNftItemsByUserId(Long userId) {
+        return userEquipItemRepository.findNftItemsByUserId(userId);
     }
 }

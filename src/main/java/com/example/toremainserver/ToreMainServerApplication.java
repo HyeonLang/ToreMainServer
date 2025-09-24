@@ -27,7 +27,7 @@ public class ToreMainServerApplication {
     }
 
 
-    @Bean
+    // @Bean  // DB 연결 테스트 비활성화
     public CommandLineRunner testDbConnection(
             UserRepository userRepository,
             NpcRepository npcRepository,

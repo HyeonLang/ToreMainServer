@@ -98,6 +98,80 @@ public class MarketController {
     }
     
     /**
+     * 특정 사용자의 활성 판매 주문 조회 (ACTIVE + LOCKED)
+     * GET /sell-orders/user/:address/active
+     */
+    @GetMapping("/sell-orders/user/{address}/active")
+    public ResponseEntity<Map<String, Object>> getUserActiveSellOrders(@PathVariable String address) {
+        try {
+            List<NFTSellOrder> orders = marketService.getActiveOrdersBySeller(address);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", orders);
+            response.put("count", orders.size());
+            response.put("message", "사용자 활성 판매 주문 목록을 성공적으로 조회했습니다");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    /**
+     * 특정 사용자의 완료된 판매 주문 조회 (COMPLETED + CANCELLED)
+     * GET /sell-orders/user/:address/completed
+     */
+    @GetMapping("/sell-orders/user/{address}/completed")
+    public ResponseEntity<Map<String, Object>> getUserCompletedSellOrders(@PathVariable String address) {
+        try {
+            List<NFTSellOrder> orders = marketService.getCompletedOrdersBySeller(address);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", orders);
+            response.put("count", orders.size());
+            response.put("message", "사용자 완료된 판매 주문 목록을 성공적으로 조회했습니다");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    /**
+     * 특정 사용자의 주문 통계 조회
+     * GET /sell-orders/user/:address/stats
+     */
+    @GetMapping("/sell-orders/user/{address}/stats")
+    public ResponseEntity<Map<String, Object>> getUserOrderStats(@PathVariable String address) {
+        try {
+            Map<String, Long> stats = marketService.getOrderStatsBySeller(address);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", stats);
+            response.put("message", "사용자 주문 통계를 성공적으로 조회했습니다");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+    
+    /**
      * 특정 판매 주문 조회
      * GET /sell-orders/:orderId
      */

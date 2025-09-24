@@ -21,8 +21,28 @@ public interface NFTSellOrderRepository extends JpaRepository<NFTSellOrder, Long
     // 상태별 주문 조회
     List<NFTSellOrder> findByStatus(NFTSellOrder.OrderStatus status);
     
+    // 활성 주문만 조회 (ACTIVE + LOCKED)
+    @Query("SELECT s FROM NFTSellOrder s WHERE s.status IN ('ACTIVE', 'LOCKED') ORDER BY s.createdAt DESC")
+    List<NFTSellOrder> findActiveOrders();
+    
+    // 활성 주문 개수 조회 (성능 최적화)
+    @Query("SELECT COUNT(s) FROM NFTSellOrder s WHERE s.status IN ('ACTIVE', 'LOCKED')")
+    long countActiveOrders();
+    
     // 판매자와 상태로 조회
     List<NFTSellOrder> findBySellerAndStatus(String seller, NFTSellOrder.OrderStatus status);
+    
+    // 판매자의 활성 주문 조회
+    @Query("SELECT s FROM NFTSellOrder s WHERE s.seller = :seller AND s.status IN ('ACTIVE', 'LOCKED') ORDER BY s.createdAt DESC")
+    List<NFTSellOrder> findActiveOrdersBySeller(@Param("seller") String seller);
+    
+    // 판매자의 완료된 주문 조회 (COMPLETED, CANCELLED)
+    @Query("SELECT s FROM NFTSellOrder s WHERE s.seller = :seller AND s.status IN ('COMPLETED', 'CANCELLED') ORDER BY s.updatedAt DESC")
+    List<NFTSellOrder> findCompletedOrdersBySeller(@Param("seller") String seller);
+    
+    // 판매자의 주문 통계
+    @Query("SELECT s.status, COUNT(s) FROM NFTSellOrder s WHERE s.seller = :seller GROUP BY s.status")
+    List<Object[]> getOrderStatsBySeller(@Param("seller") String seller);
     
     // NFT 컨트랙트와 토큰 ID로 조회
     List<NFTSellOrder> findByNftContractAndTokenId(String nftContract, String tokenId);
@@ -54,12 +74,16 @@ public interface NFTSellOrderRepository extends JpaRepository<NFTSellOrder, Long
     @Query("SELECT AVG(CAST(s.price AS java.math.BigInteger)) FROM NFTSellOrder s WHERE s.status = 'COMPLETED'")
     String getAveragePrice();
     
-    // 검색용 쿼리
-    @Query("SELECT s FROM NFTSellOrder s WHERE s.status = 'ACTIVE' AND " +
-           "(s.tokenId LIKE %:query% OR s.nftContract LIKE %:query%)")
-    List<NFTSellOrder> searchByQuery(@Param("query") String query);
+    // 검색용 쿼리 (활성 주문만)
+    @Query("SELECT s FROM NFTSellOrder s WHERE s.status IN ('ACTIVE', 'LOCKED') AND " +
+           "(s.tokenId LIKE %:query% OR s.nftContract LIKE %:query%) ORDER BY s.createdAt DESC")
+    List<NFTSellOrder> searchActiveOrdersByQuery(@Param("query") String query);
     
-    // 인기 NFT 조회 (조회수나 거래량 기준으로 정렬)
-    @Query("SELECT s FROM NFTSellOrder s WHERE s.status = 'ACTIVE' ORDER BY s.createdAt DESC")
-    List<NFTSellOrder> findPopularNFTs();
+    // 인기 NFT 조회 (활성 주문만)
+    @Query("SELECT s FROM NFTSellOrder s WHERE s.status IN ('ACTIVE', 'LOCKED') ORDER BY s.createdAt DESC")
+    List<NFTSellOrder> findPopularActiveNFTs();
+    
+    // 페이징을 위한 활성 주문 조회
+    @Query("SELECT s FROM NFTSellOrder s WHERE s.status IN ('ACTIVE', 'LOCKED') ORDER BY s.createdAt DESC")
+    List<NFTSellOrder> findActiveOrdersWithPaging(@Param("offset") int offset, @Param("limit") int limit);
 }

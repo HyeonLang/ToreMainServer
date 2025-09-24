@@ -9,56 +9,56 @@ public class NFTSellOrder {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 데이터베이스 기본키 (자동 증가)
     
     @Column(name = "order_id", unique = true, nullable = false)
-    private String orderId;
+    private String orderId; // 주문 고유 식별자 (UUID 등)
     
     @Column(name = "seller", nullable = false)
-    private String seller;
+    private String seller; // 판매자 지갑 주소
     
     @Column(name = "nft_contract", nullable = false)
-    private String nftContract;
+    private String nftContract; // NFT 컨트랙트 주소
     
     @Column(name = "token_id", nullable = false)
-    private String tokenId;
+    private String tokenId; // NFT 토큰 ID
     
     @Column(name = "price", nullable = false)
-    private String price;
+    private String price; // 판매 가격 (Wei 단위, String으로 저장)
     
     @Column(name = "currency", nullable = false)
-    private String currency;
+    private String currency; // 결제 통화 (예: ETH, USDT 등)
     
     @Column(name = "nonce", nullable = false)
-    private Long nonce;
+    private Long nonce; // 서명을 위한 논스값 (중복 방지)
     
     @Column(name = "deadline", nullable = false)
-    private Long deadline;
+    private Long deadline; // 주문 만료 시간 (Unix 타임스탬프)
     
     @Column(name = "signature", nullable = false, columnDefinition = "TEXT")
-    private String signature;
+    private String signature; // 판매자의 디지털 서명
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private OrderStatus status;
+    private OrderStatus status; // 주문 상태 (ACTIVE, LOCKED, COMPLETED, CANCELLED)
     
     @Column(name = "buyer")
-    private String buyer;
+    private String buyer; // 구매자 지갑 주소 (매칭 시 설정)
     
     @Column(name = "matched_at")
-    private Long matchedAt;
+    private Long matchedAt; // 매칭된 시간 (Unix 타임스탬프)
     
     @Column(name = "locked_by")
-    private String lockedBy;
+    private String lockedBy; // 주문을 락한 사용자 (구매 진행 중 중복 방지)
     
     @Column(name = "locked_at")
-    private Long lockedAt;
+    private Long lockedAt; // 락된 시간 (Unix 타임스탬프)
     
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt; // 주문 생성 시간
     
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt; // 주문 수정 시간
     
     // 기본 생성자
     public NFTSellOrder() {

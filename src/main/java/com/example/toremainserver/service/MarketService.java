@@ -43,10 +43,47 @@ public class MarketService {
     }
     
     /**
-     * 활성 판매 주문 목록 조회
+     * 활성 판매 주문 목록 조회 (ACTIVE + LOCKED 상태)
      */
     public List<NFTSellOrder> getActiveSellOrders() {
-        return sellOrderRepository.findByStatus(NFTSellOrder.OrderStatus.ACTIVE);
+        return sellOrderRepository.findActiveOrders();
+    }
+    
+    /**
+     * 활성 주문 개수 조회 (성능 최적화)
+     */
+    public long getActiveOrdersCount() {
+        return sellOrderRepository.countActiveOrders();
+    }
+    
+    /**
+     * 판매자의 활성 주문 조회
+     */
+    public List<NFTSellOrder> getActiveOrdersBySeller(String seller) {
+        return sellOrderRepository.findActiveOrdersBySeller(seller);
+    }
+    
+    /**
+     * 판매자의 완료된 주문 조회
+     */
+    public List<NFTSellOrder> getCompletedOrdersBySeller(String seller) {
+        return sellOrderRepository.findCompletedOrdersBySeller(seller);
+    }
+    
+    /**
+     * 판매자의 주문 통계 조회
+     */
+    public Map<String, Long> getOrderStatsBySeller(String seller) {
+        List<Object[]> results = sellOrderRepository.getOrderStatsBySeller(seller);
+        Map<String, Long> stats = new HashMap<>();
+        
+        for (Object[] result : results) {
+            String status = (String) result[0];
+            Long count = (Long) result[1];
+            stats.put(status, count);
+        }
+        
+        return stats;
     }
     
     /**
@@ -221,7 +258,7 @@ public class MarketService {
      * 인기 NFT 조회
      */
     public List<NFTSellOrder> getPopularNFTs(int limit) {
-        return sellOrderRepository.findPopularNFTs()
+        return sellOrderRepository.findPopularActiveNFTs()
                 .stream()
                 .limit(limit)
                 .collect(Collectors.toList());
@@ -233,7 +270,7 @@ public class MarketService {
      * NFT 검색
      */
     public List<NFTSellOrder> searchNFTs(String query, Map<String, String> filters) {
-        List<NFTSellOrder> results = sellOrderRepository.searchByQuery(query);
+        List<NFTSellOrder> results = sellOrderRepository.searchActiveOrdersByQuery(query);
         
         // 필터 적용
         if (filters != null) {

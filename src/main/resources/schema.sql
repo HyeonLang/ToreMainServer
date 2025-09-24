@@ -21,6 +21,11 @@ CREATE TABLE IF NOT EXISTS nft_sell_orders (
     INDEX idx_status (status),
     INDEX idx_nft_contract_token (nft_contract, token_id),
     INDEX idx_currency (currency),
-    INDEX idx_deadline (deadline)
+    INDEX idx_deadline (deadline),
+    -- 활성 주문 조회 최적화를 위한 복합 인덱스
+    INDEX idx_active_orders (status, created_at),
+    INDEX idx_seller_status (seller, status),
+    INDEX idx_status_currency (status, currency),
+    INDEX idx_status_deadline (status, deadline)
 );
 
