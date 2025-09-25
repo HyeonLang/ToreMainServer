@@ -1,5 +1,5 @@
 -- 사용자 테이블 초기 데이터
-INSERT INTO users (username, password, playername, wallet_address, created_at, updated_at) VALUES ('admin', 'password', '관리자', '0xC274A22FAC186a684eAaF344402f7b30212b6511', NOW(), NOW()) ON DUPLICATE KEY UPDATE updated_at = NOW();
+INSERT INTO users (username, password, playername, wallet_address, created_at, updated_at) VALUES ('admin', 'password', '관리자', '0xFF5530beBE63f97f6cC80193416f890d76d65661', NOW(), NOW()) ON DUPLICATE KEY UPDATE updated_at = NOW();
 
 -- 아이템 정의 테이블 초기 데이터
 INSERT INTO item_definitions (id, name, type, base_stats, description, is_stackable, max_stack) 

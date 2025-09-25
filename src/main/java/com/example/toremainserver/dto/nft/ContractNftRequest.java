@@ -8,8 +8,6 @@ public class ContractNftRequest {
     @NotNull(message = "지갑 주소는 필수입니다")
     private String walletAddress;
     
-    @NotNull(message = "컨트랙트 주소는 필수입니다")
-    private String contractAddress;
     
     @NotNull(message = "아이템 ID는 필수입니다")
     @Positive(message = "아이템 ID는 양수여야 합니다")
@@ -26,10 +24,8 @@ public class ContractNftRequest {
     public ContractNftRequest() {}
     
     // 생성자
-    public ContractNftRequest(String walletAddress, String contractAddress, 
-                               Integer itemId, Long userEquipItemId, Object itemData) {
+    public ContractNftRequest(String walletAddress, Integer itemId, Long userEquipItemId, Object itemData) {
         this.walletAddress = walletAddress;
-        this.contractAddress = contractAddress;
         this.itemId = itemId;
         this.userEquipItemId = userEquipItemId;
         this.itemData = itemData;
@@ -44,13 +40,6 @@ public class ContractNftRequest {
         this.walletAddress = walletAddress;
     }
     
-    public String getContractAddress() {
-        return contractAddress;
-    }
-    
-    public void setContractAddress(String contractAddress) {
-        this.contractAddress = contractAddress;
-    }
     
     public Integer getItemId() {
         return itemId;

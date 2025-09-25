@@ -8,8 +8,6 @@ public class ContractNftBurnRequest {
     @NotNull(message = "지갑 주소는 필수입니다")
     private String walletAddress;
     
-    @NotNull(message = "컨트랙트 주소는 필수입니다")
-    private String contractAddress;
     
     @NotNull(message = "NFT ID는 필수입니다")
     @Positive(message = "NFT ID는 양수여야 합니다")
@@ -19,9 +17,8 @@ public class ContractNftBurnRequest {
     public ContractNftBurnRequest() {}
     
     // 생성자
-    public ContractNftBurnRequest(String walletAddress, String contractAddress, Long nftId) {
+    public ContractNftBurnRequest(String walletAddress, Long nftId) {
         this.walletAddress = walletAddress;
-        this.contractAddress = contractAddress;
         this.nftId = nftId;
     }
     
@@ -34,13 +31,6 @@ public class ContractNftBurnRequest {
         this.walletAddress = walletAddress;
     }
     
-    public String getContractAddress() {
-        return contractAddress;
-    }
-    
-    public void setContractAddress(String contractAddress) {
-        this.contractAddress = contractAddress;
-    }
     
     public Long getNftId() {
         return nftId;

@@ -90,7 +90,6 @@ public class NftService {
             // 6. 블록체인 서버로 요청 전송
             ContractNftRequest contractRequest = new ContractNftRequest(
                 user.getWalletAddress(),
-                contractAddress,
                 request.getItemId(),
                 request.getUserEquipItemId(),
                 itemData
@@ -174,7 +173,6 @@ public class NftService {
             // 4. 블록체인 서버로 burn 요청 전송
             ContractNftBurnRequest contractRequest = new ContractNftBurnRequest(
                 user.getWalletAddress(),
-                contractAddress,
                 request.getNftId()
             );
             
