@@ -130,7 +130,7 @@ public class NftController {
      * @param address 지갑 주소
      * @return NFT화된 아이템 목록
      */
-    @GetMapping("/nfts/user/{address}")
+    @GetMapping("/nft/user/{address}")
     public ResponseEntity<Map<String, Object>> getUserNftItems(@PathVariable String address) {
         try {
             List<UserEquipItem> nftItems = nftService.getUserNftItems(address);

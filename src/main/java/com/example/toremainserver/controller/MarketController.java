@@ -99,9 +99,9 @@ public class MarketController {
     
     /**
      * 특정 사용자의 활성 판매 주문 조회 (ACTIVE + LOCKED)
-     * GET /sell-orders/user/:address/active
+     * GET /sell-orders/user/active/:address
      */
-    @GetMapping("/sell-orders/user/{address}/active")
+    @GetMapping("/sell-orders/user/active/{address}")
     public ResponseEntity<Map<String, Object>> getUserActiveSellOrders(@PathVariable String address) {
         try {
             List<NFTSellOrder> orders = marketService.getActiveOrdersBySeller(address);
@@ -124,9 +124,9 @@ public class MarketController {
     
     /**
      * 특정 사용자의 완료된 판매 주문 조회 (COMPLETED + CANCELLED)
-     * GET /sell-orders/user/:address/completed
+     * GET /sell-orders/user/completed/:address
      */
-    @GetMapping("/sell-orders/user/{address}/completed")
+    @GetMapping("/sell-orders/user/completed/{address}")
     public ResponseEntity<Map<String, Object>> getUserCompletedSellOrders(@PathVariable String address) {
         try {
             List<NFTSellOrder> orders = marketService.getCompletedOrdersBySeller(address);
@@ -149,9 +149,9 @@ public class MarketController {
     
     /**
      * 특정 사용자의 주문 통계 조회
-     * GET /sell-orders/user/:address/stats
+     * GET /sell-orders/user/stats/:address
      */
-    @GetMapping("/sell-orders/user/{address}/stats")
+    @GetMapping("/sell-orders/user/stats/{address}")
     public ResponseEntity<Map<String, Object>> getUserOrderStats(@PathVariable String address) {
         try {
             Map<String, Long> stats = marketService.getOrderStatsBySeller(address);
@@ -202,9 +202,9 @@ public class MarketController {
     
     /**
      * 판매 주문 상태 업데이트
-     * PUT /sell-orders/:orderId/status
+     * PUT /sell-orders/status/:orderId
      */
-    @PutMapping("/sell-orders/{orderId}/status")
+    @PutMapping("/sell-orders/order/{orderId}")
     public ResponseEntity<Map<String, Object>> updateSellOrderStatus(
             @PathVariable String orderId,
             @Valid @RequestBody UpdateOrderStatusRequest request) {
@@ -256,9 +256,9 @@ public class MarketController {
     
     /**
      * 구매 완료 확인
-     * POST /sell-orders/:orderId/confirm
+     * POST /sell-orders/confirm/:orderId
      */
-    @PostMapping("/sell-orders/{orderId}/confirm")
+    @PostMapping("/sell-orders/confirm/{orderId}")
     public ResponseEntity<Map<String, Object>> confirmPurchase(
             @PathVariable String orderId,
             @Valid @RequestBody ConfirmPurchaseRequest request) {
@@ -281,9 +281,9 @@ public class MarketController {
     
     /**
      * 트랜잭션 실패 알림
-     * POST /sell-orders/:orderId/failure
+     * POST /sell-orders/failure/:orderId
      */
-    @PostMapping("/sell-orders/{orderId}/failure")
+    @PostMapping("/sell-orders/failure/{orderId}")
     public ResponseEntity<Map<String, Object>> reportTransactionFailure(
             @PathVariable String orderId,
             @Valid @RequestBody TransactionFailureRequest request) {
@@ -308,7 +308,7 @@ public class MarketController {
      * 오프체인 서명 데이터 조회
      * GET /sell-orders/:orderId/offchain-data
      */
-    @GetMapping("/sell-orders/{orderId}/offchain-data")
+    @GetMapping("/sell-orders/offchain-data/{orderId}")
     public ResponseEntity<Map<String, Object>> getOffchainSignatureData(@PathVariable String orderId) {
         try {
             OffchainSignatureDataResponse data = marketService.getOffchainSignatureData(orderId);
