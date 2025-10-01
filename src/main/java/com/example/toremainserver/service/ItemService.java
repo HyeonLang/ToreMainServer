@@ -120,7 +120,7 @@ public class ItemService {
     }
     
     // 사용자에게 장비 아이템 추가
-    public UserEquipItem addEquipItemToUser(Long userId, Integer itemId, Long localItemId) {
+    public UserEquipItem addEquipItemToUser(Long userId, Integer itemId, Long localItemId, Map<String, Object> enhancementData) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
@@ -136,7 +136,7 @@ public class ItemService {
             localItemId = userId * 2000L + itemId;
         }
         
-        UserEquipItem userItem = new UserEquipItem(userId, itemId, null, null, localItemId);
+        UserEquipItem userItem = new UserEquipItem(userId, itemId, enhancementData, null, localItemId);
         return userEquipItemRepository.save(userItem);
     }
 } 

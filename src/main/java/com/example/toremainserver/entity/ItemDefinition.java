@@ -33,6 +33,12 @@ public class ItemDefinition {
     @Column(name = "max_stack")
     private Integer maxStack = 99;
     
+    @Column(name = "image_url", length = 500, nullable = true)
+    private String imageUrl;
+    
+    @Column(name = "ipfs_image_url", length = 500, nullable = true)
+    private String ipfsImageUrl;
+    
     // 아이템 타입 enum
     public enum ItemType {
         CONSUMABLE("consumable"),
@@ -65,6 +71,15 @@ public class ItemDefinition {
         this.type = type;
         this.baseStats = baseStats;
         this.description = description;
+    }
+    
+    public ItemDefinition(String name, ItemType type, Map<String, Object> baseStats, String description, String imageUrl, String ipfsImageUrl) {
+        this.name = name;
+        this.type = type;
+        this.baseStats = baseStats;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.ipfsImageUrl = ipfsImageUrl;
     }
     
     // Getter와 Setter
@@ -122,5 +137,44 @@ public class ItemDefinition {
     
     public void setMaxStack(Integer maxStack) {
         this.maxStack = maxStack;
+    }
+    
+    public String getImageUrl() {
+        return imageUrl;
+    }
+    
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+    
+    public String getIpfsImageUrl() {
+        return ipfsImageUrl;
+    }
+    
+    public void setIpfsImageUrl(String ipfsImageUrl) {
+        this.ipfsImageUrl = ipfsImageUrl;
+    }
+    
+    /**
+     * 사용 가능한 이미지 URL을 반환 (우선순위: imageUrl > ipfsImageUrl)
+     * @return 사용 가능한 이미지 URL, 둘 다 null이면 null
+     */
+    public String getAvailableImageUrl() {
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            return imageUrl;
+        }
+        if (ipfsImageUrl != null && !ipfsImageUrl.trim().isEmpty()) {
+            return ipfsImageUrl;
+        }
+        return null;
+    }
+    
+    /**
+     * 이미지가 있는지 확인
+     * @return 이미지 URL이 하나라도 있으면 true
+     */
+    public boolean hasImage() {
+        return (imageUrl != null && !imageUrl.trim().isEmpty()) || 
+               (ipfsImageUrl != null && !ipfsImageUrl.trim().isEmpty());
     }
 } 

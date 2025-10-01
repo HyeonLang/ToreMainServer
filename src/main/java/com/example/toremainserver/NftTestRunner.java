@@ -154,10 +154,9 @@ public class NftTestRunner implements CommandLineRunner {
                 
                 // NFT 버닝 요청 생성
                 NftBurnClientRequest burnRequest = new NftBurnClientRequest(
-                    user.getId(),
-                    item.getItemId(),
-                    item.getId(),
-                    item.getNftId()
+                    user.getWalletAddress(),
+                    item.getNftId(),
+                    "0xe05FF7e673F41B7d8272D264a2F8542642Cc1dfb" // 컨트랙트 주소
                 );
                 
                 // NFT 버닝 실행

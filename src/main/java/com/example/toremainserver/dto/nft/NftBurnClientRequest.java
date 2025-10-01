@@ -1,67 +1,53 @@
 package com.example.toremainserver.dto.nft;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public class NftBurnClientRequest {
     
-    @NotNull(message = "사용자 ID는 필수입니다")
-    @Positive(message = "사용자 ID는 양수여야 합니다")
-    private Long userId;
+    @NotBlank(message = "사용자 지갑 주소는 필수입니다")
+    private String userAddress;
     
-    @NotNull(message = "아이템 ID는 필수입니다")
-    @Positive(message = "아이템 ID는 양수여야 합니다")
-    private Integer itemId;
+    @NotNull(message = "토큰 ID는 필수입니다")
+    @Positive(message = "토큰 ID는 양수여야 합니다")
+    private Long tokenId;
     
-    @NotNull(message = "사용자 장비 아이템 ID는 필수입니다")
-    @Positive(message = "사용자 장비 아이템 ID는 양수여야 합니다")
-    private Long userEquipItemId;
-    
-    @NotNull(message = "NFT ID는 필수입니다")
-    @Positive(message = "NFT ID는 양수여야 합니다")
-    private Long nftId;
+    @NotBlank(message = "컨트랙트 주소는 필수입니다")
+    private String contractAddress;
     
     // 기본 생성자
     public NftBurnClientRequest() {}
     
     // 생성자
-    public NftBurnClientRequest(Long userId, Integer itemId, Long userEquipItemId, Long nftId) {
-        this.userId = userId;
-        this.itemId = itemId;
-        this.userEquipItemId = userEquipItemId;
-        this.nftId = nftId;
+    public NftBurnClientRequest(String userAddress, Long tokenId, String contractAddress) {
+        this.userAddress = userAddress;
+        this.tokenId = tokenId;
+        this.contractAddress = contractAddress;
     }
     
     // Getter와 Setter
-    public Long getUserId() {
-        return userId;
+    public String getUserAddress() {
+        return userAddress;
     }
     
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUserAddress(String userAddress) {
+        this.userAddress = userAddress;
     }
     
-    public Integer getItemId() {
-        return itemId;
+    public Long getTokenId() {
+        return tokenId;
     }
     
-    public void setItemId(Integer itemId) {
-        this.itemId = itemId;
+    public void setTokenId(Long tokenId) {
+        this.tokenId = tokenId;
     }
     
-    public Long getUserEquipItemId() {
-        return userEquipItemId;
+    public String getContractAddress() {
+        return contractAddress;
     }
     
-    public void setUserEquipItemId(Long userEquipItemId) {
-        this.userEquipItemId = userEquipItemId;
-    }
-    
-    public Long getNftId() {
-        return nftId;
-    }
-    
-    public void setNftId(Long nftId) {
-        this.nftId = nftId;
+    public void setContractAddress(String contractAddress) {
+        this.contractAddress = contractAddress;
     }
 }

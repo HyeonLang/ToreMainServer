@@ -1,6 +1,7 @@
 package com.example.toremainserver.controller;
 
 import com.example.toremainserver.dto.item.ItemRequest;
+import com.example.toremainserver.dto.item.EquipItemRequest;
 import com.example.toremainserver.entity.ItemDefinition;
 import com.example.toremainserver.entity.UserConsumableItem;
 import com.example.toremainserver.entity.UserEquipItem;
@@ -104,12 +105,14 @@ public class ItemController {
     
     // 사용자에게 장비 아이템 추가
     @PostMapping("/equip-item")
-    public ResponseEntity<UserEquipItem> addEquipItemToUser(
-            @RequestParam Long userId, 
-            @RequestParam Integer itemId,
-            @RequestParam(required = false) Long localItemId) {
+    public ResponseEntity<UserEquipItem> addEquipItemToUser(@RequestBody EquipItemRequest request) {
         try {
-            UserEquipItem userItem = itemService.addEquipItemToUser(userId, itemId, localItemId);
+            UserEquipItem userItem = itemService.addEquipItemToUser(
+                request.getUserId(), 
+                request.getItemId(), 
+                request.getLocalItemId(),
+                request.getEnhancementData()
+            );
             return ResponseEntity.ok(userItem);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();

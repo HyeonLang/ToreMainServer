@@ -133,12 +133,12 @@ public class NftController {
     @GetMapping("/nft/user/{address}")
     public ResponseEntity<Map<String, Object>> getUserNftItems(@PathVariable String address) {
         try {
-            List<UserEquipItem> nftItems = nftService.getUserNftItems(address);
+            List<Map<String, Object>> nftMetadataList = nftService.getUserNftItems(address);
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("data", nftItems);
-            response.put("count", nftItems.size());
+            response.put("data", nftMetadataList);
+            response.put("count", nftMetadataList.size());
             response.put("message", "사용자의 NFT화된 아이템 목록을 성공적으로 조회했습니다");
             
             return ResponseEntity.ok(response);

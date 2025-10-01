@@ -115,20 +115,62 @@ public class NftService {
     private Map<String, Object> createItemData(ItemDefinition itemDefinition, UserEquipItem userEquipItem) {
         Map<String, Object> itemData = new HashMap<>();
         
-        // 기본 아이템 정보
+        // NFT 메타데이터 표준 형식
         itemData.put("name", itemDefinition.getName());
-        itemData.put("type", itemDefinition.getType().getValue());
         itemData.put("description", itemDefinition.getDescription());
-        itemData.put("baseStats", itemDefinition.getBaseStats());
         
-        // 강화 데이터 (있는 경우)
-        if (userEquipItem.getEnhancementData() != null) {
-            itemData.put("enhancementData", userEquipItem.getEnhancementData());
+        // IPFS 이미지 URL (ipfs:// 형식으로 변환)
+        String ipfsImageUrl = itemDefinition.getIpfsImageUrl();
+        if (ipfsImageUrl != null && !ipfsImageUrl.trim().isEmpty()) {
+            // https://ipfs.io/ipfs/QmXXX/filename.png -> ipfs://QmXXX/filename.png
+            if (ipfsImageUrl.contains("/ipfs/")) {
+                String cidAndFile = ipfsImageUrl.substring(ipfsImageUrl.lastIndexOf("/ipfs/") + 6);
+                itemData.put("image", "ipfs://" + cidAndFile);
+            } else {
+                itemData.put("image", ipfsImageUrl);
+            }
+        } else {
+            // IPFS 이미지가 없으면 로컬 이미지 사용
+            String localImageUrl = itemDefinition.getImageUrl();
+            if (localImageUrl != null && !localImageUrl.trim().isEmpty()) {
+                itemData.put("image", localImageUrl);
+            }
         }
         
-        // 메타데이터
-        itemData.put("mintedAt", System.currentTimeMillis());
-        itemData.put("localItemId", userEquipItem.getLocalItemId());
+        // External URL (게임 웹사이트)
+        itemData.put("external_url", "https://toregame.com/items/" + userEquipItem.getId());
+        
+        // Attributes 배열 생성
+        List<Map<String, Object>> attributes = new ArrayList<>();
+        
+        // base_stats를 attributes로 변환
+        if (itemDefinition.getBaseStats() != null) {
+            for (Map.Entry<String, Object> entry : itemDefinition.getBaseStats().entrySet()) {
+                Map<String, Object> attribute = new HashMap<>();
+                attribute.put("trait_type", entry.getKey());
+                attribute.put("value", entry.getValue());
+                attributes.add(attribute);
+            }
+        }
+        
+        // enhancement_data를 attributes로 변환
+        if (userEquipItem.getEnhancementData() != null) {
+            for (Map.Entry<String, Object> entry : userEquipItem.getEnhancementData().entrySet()) {
+                Map<String, Object> attribute = new HashMap<>();
+                attribute.put("trait_type", entry.getKey());
+                attribute.put("value", entry.getValue());
+                attributes.add(attribute);
+            }
+        }
+        
+        itemData.put("attributes", attributes);
+        
+        // Game data
+        Map<String, Object> gameData = new HashMap<>();
+        gameData.put("id", "item_" + userEquipItem.getId());
+        gameData.put("item_id", itemDefinition.getId().toString());
+        gameData.put("nft_id", userEquipItem.getNftId());
+        itemData.put("game_data", gameData);
         
         return itemData;
     }
@@ -153,35 +195,22 @@ public class NftService {
     
     public NftBurnClientResponse burnNft(NftBurnClientRequest request) {
         try {
-            // 1. 사용자 정보 조회
-            User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + request.getUserId()));
-            
-            if (user.getWalletAddress() == null || user.getWalletAddress().isEmpty()) {
-                return new NftBurnClientResponse(false, "사용자의 지갑 주소가 설정되지 않았습니다");
-            }
-            
-            // 2. 사용자 장비 아이템 조회
-            UserEquipItem userEquipItem = userEquipItemRepository.findById(request.getUserEquipItemId())
-                .orElseThrow(() -> new RuntimeException("사용자 장비 아이템을 찾을 수 없습니다: " + request.getUserEquipItemId()));
-            
-            // 3. NFT ID 검증
-            if (userEquipItem.getNftId() == null || !userEquipItem.getNftId().equals(request.getNftId())) {
-                return new NftBurnClientResponse(false, "NFT ID가 일치하지 않습니다");
-            }
-            
-            // 4. 블록체인 서버로 burn 요청 전송
+            // 1. 블록체인 서버로 burn 요청 전송
             ContractNftBurnRequest contractRequest = new ContractNftBurnRequest(
-                user.getWalletAddress(),
-                request.getNftId()
+                request.getUserAddress(),
+                request.getTokenId(),
+                request.getContractAddress()
             );
             
             ContractNftBurnResponse contractResponse = sendBurnToBlockchainServer(contractRequest);
             
             if (contractResponse.isSuccess()) {
-                // 5. 성공 시 UserEquipItem에서 NFT ID 제거
-                userEquipItem.setNftId(null);
-                userEquipItemRepository.save(userEquipItem);
+                // 2. 성공 시 데이터베이스에서 해당 NFT ID를 가진 UserEquipItem 찾아서 NFT ID 제거
+                List<UserEquipItem> nftItems = userEquipItemRepository.findAllByNftId(request.getTokenId());
+                for (UserEquipItem item : nftItems) {
+                    item.setNftId(null);
+                    userEquipItemRepository.save(item);
+                }
                 
                 return new NftBurnClientResponse(true);
             } else {
@@ -410,10 +439,21 @@ public class NftService {
     }
     
     /**
-     * 지갑 주소로 NFT화된 아이템 목록 조회
+     * 지갑 주소로 NFT화된 아이템 목록 조회 (메타데이터 형식)
      */
-    public List<UserEquipItem> getUserNftItems(String walletAddress) {
-        return userEquipItemRepository.findNftItemsByWalletAddress(walletAddress);
+    public List<Map<String, Object>> getUserNftItems(String walletAddress) {
+        List<UserEquipItem> nftItems = userEquipItemRepository.findNftItemsByWalletAddress(walletAddress);
+        List<Map<String, Object>> metadataList = new ArrayList<>();
+        
+        for (UserEquipItem userEquipItem : nftItems) {
+            ItemDefinition itemDefinition = itemDefinitionRepository.findById(userEquipItem.getItemId())
+                .orElseThrow(() -> new RuntimeException("ItemDefinition not found: " + userEquipItem.getItemId()));
+            
+            Map<String, Object> metadata = createItemData(itemDefinition, userEquipItem);
+            metadataList.add(metadata);
+        }
+        
+        return metadataList;
     }
     
     /**
