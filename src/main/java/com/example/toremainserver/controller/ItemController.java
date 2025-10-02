@@ -88,7 +88,7 @@ public class ItemController {
         }
     }
     
-    // 사용자에게 소비 아이템 추가
+    // 사용자에게 소비 아이템 추가 todo. 파라미터를 body로 받기
     @PostMapping("/consumable-item")
     public ResponseEntity<UserConsumableItem> addConsumableItemToUser(
             @RequestParam Long userId, 
@@ -119,3 +119,5 @@ public class ItemController {
         }
     }
 } 
+
+// todo. 사용자 아이템 제거(수량감소 등) 만들기
