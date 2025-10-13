@@ -2,6 +2,7 @@ package com.example.toremainserver.controller;
 
 import com.example.toremainserver.dto.item.ItemRequest;
 import com.example.toremainserver.dto.item.EquipItemRequest;
+import com.example.toremainserver.dto.item.ConsumableItemRequest;
 import com.example.toremainserver.entity.ItemDefinition;
 import com.example.toremainserver.entity.UserConsumableItem;
 import com.example.toremainserver.entity.UserEquipItem;
@@ -90,13 +91,13 @@ public class ItemController {
     
     // 사용자에게 소비 아이템 추가 todo. 파라미터를 body로 받기
     @PostMapping("/consumable-item")
-    public ResponseEntity<UserConsumableItem> addConsumableItemToUser(
-            @RequestParam Long userId, 
-            @RequestParam Integer itemId, 
-            @RequestParam Integer quantity,
-            @RequestParam(required = false) Long localItemId) {
+    public ResponseEntity<UserConsumableItem> addConsumableItemToUser(@RequestBody ConsumableItemRequest request) {
         try {
-            UserConsumableItem userItem = itemService.addConsumableItemToUser(userId, itemId, quantity, localItemId);
+            UserConsumableItem userItem = itemService.addConsumableItemToUser(
+                    request.getUserId(),
+                    request.getItemId(),
+                    request.getQuantity(),
+                    request.getLocalItemId());
             return ResponseEntity.ok(userItem);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
