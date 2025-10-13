@@ -26,7 +26,7 @@ public class MarketController {
      * 판매 주문 생성
      * POST /sell-orders
      */
-    @PostMapping("/sell-orders")
+    @PostMapping(value = "/sell-orders", produces = "application/json; charset=UTF-8")
     public ResponseEntity<Map<String, Object>> createSellOrder(@Valid @RequestBody CreateSellOrderRequest request) {
         try {
             NFTSellOrder sellOrder = marketService.createSellOrder(request);

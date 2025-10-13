@@ -35,7 +35,7 @@ public class AuthController {
         }
     }
     
-    @PostMapping("/register")
+    @PostMapping(value = "/register", produces = "application/json; charset=UTF-8")
     public ResponseEntity<?> register(@RequestBody LoginRequest registerRequest) {
         try {
             User user = authService.registerUser(registerRequest.getUsername(), registerRequest.getPassword());

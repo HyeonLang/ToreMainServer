@@ -14,9 +14,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-@Configuration
-@EnableWebSecurity
-@EnableMethodSecurity
+//@Configuration
+//@EnableWebSecurity
+//@EnableMethodSecurity
 public class SecurityConfig {
     
     @Autowired
@@ -34,6 +34,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/register").permitAll()
                 .requestMatchers("/api/auth/refresh").permitAll()
                 .requestMatchers("/api/auth/logout").permitAll()
+                
+                // NFT API 엔드포인트 (JWT 인증 불필요)
+                .requestMatchers("/api/nft/**").permitAll()
                 
                 // 보호된 엔드포인트 (JWT 인증 필요)
                 .requestMatchers("/api/npc").hasRole("USER")
