@@ -13,18 +13,18 @@ public class NftMintClientRequest {
     @Positive(message = "아이템 ID는 양수여야 합니다")
     private Integer itemId;
     
-    @NotNull(message = "사용자 장비 아이템 ID는 필수입니다")
-    @Positive(message = "사용자 장비 아이템 ID는 양수여야 합니다")
-    private Long userEquipItemId;
+    @NotNull(message = "local 아이템 ID는 필수입니다")
+    @Positive(message = "local 아이템 ID는 양수여야 합니다")
+    private Long localItemId;
     
     // 기본 생성자
     public NftMintClientRequest() {}
     
     // 생성자
-    public NftMintClientRequest(Long userId, Integer itemId, Long userEquipItemId) {
+    public NftMintClientRequest(Long userId, Integer itemId, Long localItemId) {
         this.userId = userId;
         this.itemId = itemId;
-        this.userEquipItemId = userEquipItemId;
+        this.localItemId = localItemId;
     }
     
     // Getter와 Setter
@@ -44,11 +44,11 @@ public class NftMintClientRequest {
         this.itemId = itemId;
     }
     
-    public Long getUserEquipItemId() {
-        return userEquipItemId;
+    public Long getLocalItemId() {
+        return localItemId;
     }
     
-    public void setUserEquipItemId(Long userEquipItemId) {
-        this.userEquipItemId = userEquipItemId;
+    public void setLocalItemId(Long localItemId) {
+        this.localItemId = localItemId;
     }
 }
