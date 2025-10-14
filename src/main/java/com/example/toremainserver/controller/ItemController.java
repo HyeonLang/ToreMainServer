@@ -89,10 +89,17 @@ public class ItemController {
         }
     }
     
-    // 사용자에게 소비 아이템 추가 todo. 파라미터를 body로 받기
-    @PostMapping("/consumable-item")
-    public ResponseEntity<UserConsumableItem> addConsumableItemToUser(@RequestBody ConsumableItemRequest request) {
+    // 사용자에게 소비 아이템 추가
+    @PostMapping({"/consumable-item"})
+    public ResponseEntity<?> addConsumableItemToUser(@RequestBody ConsumableItemRequest request) {
         try {
+            // 디버깅을 위한 로깅
+            System.out.println("=== 받은 요청 데이터 ===");
+            System.out.println("userId: " + request.getUserId());
+            System.out.println("itemId: " + request.getItemId());
+            System.out.println("quantity: " + request.getQuantity());
+            System.out.println("localItemId: " + request.getLocalItemId());
+            
             UserConsumableItem userItem = itemService.addConsumableItemToUser(
                     request.getUserId(),
                     request.getItemId(),
@@ -100,13 +107,16 @@ public class ItemController {
                     request.getLocalItemId());
             return ResponseEntity.ok(userItem);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            // 에러 메시지를 응답으로 반환
+            System.out.println("에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
     
     // 사용자에게 장비 아이템 추가
     @PostMapping("/equip-item")
-    public ResponseEntity<UserEquipItem> addEquipItemToUser(@RequestBody EquipItemRequest request) {
+    public ResponseEntity<?> addEquipItemToUser(@RequestBody EquipItemRequest request) {
         try {
             UserEquipItem userItem = itemService.addEquipItemToUser(
                 request.getUserId(), 
@@ -116,9 +126,35 @@ public class ItemController {
             );
             return ResponseEntity.ok(userItem);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            // 에러 메시지를 응답으로 반환
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
-} 
-
-// todo. 사용자 아이템 제거(수량감소 등) 만들기
+    
+    // 사용자 소비 아이템 제거 (수량 감소 또는 삭제)
+    @DeleteMapping({"/consumable-item", "/consumable-items"})
+    public ResponseEntity<?> removeConsumableItemFromUser(
+            @RequestParam Long userId,
+            @RequestParam Long localItemId,
+            @RequestParam Integer quantity) {
+        try {
+            itemService.removeConsumableItemFromUser(userId, localItemId, quantity);
+            return ResponseEntity.ok(java.util.Map.of("message", "소비 아이템이 성공적으로 제거되었습니다"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+    
+    // 사용자 장비 아이템 제거
+    @DeleteMapping({"/equip-item", "/equip-items"})
+    public ResponseEntity<?> removeEquipItemFromUser(
+            @RequestParam Long userId,
+            @RequestParam Long localItemId) {
+        try {
+            itemService.removeEquipItemFromUser(userId, localItemId);
+            return ResponseEntity.ok(java.util.Map.of("message", "장비 아이템이 성공적으로 제거되었습니다"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+}

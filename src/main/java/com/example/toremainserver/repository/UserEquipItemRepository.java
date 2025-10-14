@@ -37,4 +37,10 @@ public interface UserEquipItemRepository extends JpaRepository<UserEquipItem, Lo
     // 사용자 ID로 NFT화된 아이템 조회
     @Query("SELECT uei FROM UserEquipItem uei WHERE uei.userId = :userId AND uei.nftId IS NOT NULL")
     List<UserEquipItem> findNftItemsByUserId(@Param("userId") Long userId);
+    
+    // 사용자 ID, 아이템 ID, 로컬 아이템 ID로 조회
+    Optional<UserEquipItem> findByUserIdAndItemIdAndLocalItemId(Long userId, Integer itemId, Long localItemId);
+    
+    // 사용자 ID와 로컬 아이템 ID로 조회
+    Optional<UserEquipItem> findByUserIdAndLocalItemId(Long userId, Long localItemId);
 } 

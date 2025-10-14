@@ -75,8 +75,12 @@ public class NftService {
             ItemDefinition itemDefinition = itemDefinitionRepository.findById(request.getItemId())
                 .orElseThrow(() -> new RuntimeException("아이템 정의를 찾을 수 없습니다: " + request.getItemId()));
 
-            // Todo. UserEquipItem에서 사용자 id 아이템 id 로컬 id로 알맞는 장비 찾기
-
+            // 3. UserEquipItem에서 사용자 id 아이템 id 로컬 id로 알맞는 장비 찾기
+            UserEquipItem userEquipItem = userEquipItemRepository.findByUserIdAndItemIdAndLocalItemId(
+                request.getUserId(), 
+                request.getItemId(), 
+                request.getLocalItemId()
+            ).orElseThrow(() -> new RuntimeException("사용자 장비 아이템을 찾을 수 없습니다"));
 
             // 4. 아이템이 이미 NFT화되었는지 확인
             if (userEquipItem.getNftId() != null) {
@@ -90,7 +94,7 @@ public class NftService {
             ContractNftRequest contractRequest = new ContractNftRequest(
                 user.getWalletAddress(),
                 request.getItemId(),
-                request.getUserEquipItemId(),
+                userEquipItem.getId(),
                 itemData
             );
             

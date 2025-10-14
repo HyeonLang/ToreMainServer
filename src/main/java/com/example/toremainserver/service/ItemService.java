@@ -139,4 +139,60 @@ public class ItemService {
         UserEquipItem userItem = new UserEquipItem(userId, itemId, enhancementData, null, localItemId);
         return userEquipItemRepository.save(userItem);
     }
+    
+    // 사용자 소비 아이템 제거 (수량 감소 또는 삭제)
+    public void removeConsumableItemFromUser(Long userId, Long localItemId, Integer quantity) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+        
+        // userId와 localItemId로 아이템 조회
+        Optional<UserConsumableItem> userItemOptional = userConsumableItemRepository.findByUserIdAndLocalItemId(userId, localItemId);
+        if (userItemOptional.isEmpty()) {
+            throw new RuntimeException("사용자가 해당 소비 아이템을 보유하고 있지 않습니다.");
+        }
+        
+        UserConsumableItem userItem = userItemOptional.get();
+        
+        if (quantity <= 0) {
+            throw new RuntimeException("삭제할 수량은 0보다 커야 합니다.");
+        }
+        
+        if (userItem.getQuantity() < quantity) {
+            throw new RuntimeException("보유 수량(" + userItem.getQuantity() + ")보다 많은 수량을 삭제할 수 없습니다.");
+        }
+        
+        // 삭제하려는 수량이 보유 수량보다 작으면 수량만 감소
+        if (userItem.getQuantity() > quantity) {
+            userItem.setQuantity(userItem.getQuantity() - quantity);
+            userConsumableItemRepository.save(userItem);
+        } else {
+            // 수량이 같으면 아이템 자체를 삭제
+            userConsumableItemRepository.delete(userItem);
+        }
+    }
+    
+    // 사용자 장비 아이템 제거
+    public void removeEquipItemFromUser(Long userId, Long localItemId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("사용자를 찾을 수 없습니다.");
+        }
+        
+        // userId와 localItemId로 장비 아이템 조회
+        Optional<UserEquipItem> userItemOptional = userEquipItemRepository.findByUserIdAndLocalItemId(userId, localItemId);
+        if (userItemOptional.isEmpty()) {
+            throw new RuntimeException("사용자가 해당 장비 아이템을 보유하고 있지 않습니다.");
+        }
+        
+        UserEquipItem userItem = userItemOptional.get();
+        
+        // NFT화된 아이템은 삭제 불가
+        if (userItem.getNftId() != null) {
+            throw new RuntimeException("NFT화된 아이템은 삭제할 수 없습니다.");
+        }
+        
+        userEquipItemRepository.delete(userItem);
+    }
 } 
