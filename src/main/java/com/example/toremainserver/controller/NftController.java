@@ -4,11 +4,8 @@ import com.example.toremainserver.dto.nft.NftMintClientRequest;
 import com.example.toremainserver.dto.nft.NftMintClientResponse;
 import com.example.toremainserver.dto.nft.NftBurnClientRequest;
 import com.example.toremainserver.dto.nft.NftBurnClientResponse;
-import com.example.toremainserver.dto.nft.NftTransferClientRequest;
-import com.example.toremainserver.dto.nft.NftTransferClientResponse;
 import com.example.toremainserver.dto.nft.NftListClientRequest;
 import com.example.toremainserver.dto.nft.NftListClientResponse;
-import com.example.toremainserver.entity.UserEquipItem;
 import com.example.toremainserver.service.NftService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,29 +69,6 @@ public class NftController {
             
         } catch (Exception e) {
             NftBurnClientResponse errorResponse = new NftBurnClientResponse(false, "서버 오류: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(errorResponse);
-        }
-    }
-    
-    /**
-     * UE5에서 NFT화된 아이템을 다른 사용자에게 전송하는 요청을 받아 블록체인 서버로 전달
-     * 
-     * @param request NFT transfer 요청 (userId, itemId, userEquipItemId, nftId, toUserId)
-     * @return NFT transfer 결과 (성공여부 또는 오류 메시지)
-     */
-    @PostMapping("/nft/transfer")
-    public ResponseEntity<NftTransferClientResponse> transferNft(@Valid @RequestBody NftTransferClientRequest request) {
-        try {
-            NftTransferClientResponse response = nftService.transferNft(request);
-            
-            if (response.isSuccess()) {
-                return ResponseEntity.ok(response);
-            } else {
-                return ResponseEntity.badRequest().body(response);
-            }
-            
-        } catch (Exception e) {
-            NftTransferClientResponse errorResponse = new NftTransferClientResponse(false, "서버 오류: " + e.getMessage());
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }

@@ -8,10 +8,6 @@ import com.example.toremainserver.dto.nft.NftBurnClientRequest;
 import com.example.toremainserver.dto.nft.NftBurnClientResponse;
 import com.example.toremainserver.dto.nft.ContractNftBurnRequest;
 import com.example.toremainserver.dto.nft.ContractNftBurnResponse;
-import com.example.toremainserver.dto.nft.NftTransferClientRequest;
-import com.example.toremainserver.dto.nft.NftTransferClientResponse;
-import com.example.toremainserver.dto.nft.ContractNftTransferRequest;
-import com.example.toremainserver.dto.nft.ContractNftTransferResponse;
 import com.example.toremainserver.dto.nft.NftListClientRequest;
 import com.example.toremainserver.dto.nft.NftListClientResponse;
 import com.example.toremainserver.dto.nft.ContractNftListRequest;
@@ -242,82 +238,6 @@ public class NftService {
             return new ContractNftBurnResponse(false, "블록체인 서버 통신 오류: " + e.getMessage());
         }
     }
-    
-    public NftTransferClientResponse transferNft(NftTransferClientRequest request) {
-        try {
-            // 1. 보내는 사용자 정보 조회
-            User fromUser = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("보내는 사용자를 찾을 수 없습니다: " + request.getUserId()));
-            
-            if (fromUser.getWalletAddress() == null || fromUser.getWalletAddress().isEmpty()) {
-                return new NftTransferClientResponse(false, "보내는 사용자의 지갑 주소가 설정되지 않았습니다");
-            }
-            
-            // 2. 받는 사용자 정보 조회
-            User toUser = userRepository.findById(request.getToUserId())
-                .orElseThrow(() -> new RuntimeException("받는 사용자를 찾을 수 없습니다: " + request.getToUserId()));
-            
-            if (toUser.getWalletAddress() == null || toUser.getWalletAddress().isEmpty()) {
-                return new NftTransferClientResponse(false, "받는 사용자의 지갑 주소가 설정되지 않았습니다");
-            }
-            
-            // 3. 보내는 사용자의 장비 아이템 조회
-            UserEquipItem userEquipItem = userEquipItemRepository.findById(request.getUserEquipItemId())
-                .orElseThrow(() -> new RuntimeException("사용자 장비 아이템을 찾을 수 없습니다: " + request.getUserEquipItemId()));
-            
-            // 4. NFT ID 검증
-            if (userEquipItem.getNftId() == null || !userEquipItem.getNftId().equals(request.getNftId())) {
-                return new NftTransferClientResponse(false, "NFT ID가 일치하지 않습니다");
-            }
-            
-            // 5. 같은 사용자에게 전송하는지 확인
-            if (request.getUserId().equals(request.getToUserId())) {
-                return new NftTransferClientResponse(false, "자기 자신에게는 전송할 수 없습니다");
-            }
-            
-            // 6. 블록체인 서버로 transfer 요청 전송
-            ContractNftTransferRequest contractRequest = new ContractNftTransferRequest(
-                fromUser.getWalletAddress(),
-                toUser.getWalletAddress(),
-                contractAddress,
-                request.getNftId()
-            );
-            
-            ContractNftTransferResponse contractResponse = sendTransferToBlockchainServer(contractRequest);
-            
-            if (contractResponse.isSuccess()) {
-                // 7. 성공 시 UserEquipItem의 소유자를 변경
-                userEquipItem.setUserId(request.getToUserId());
-                userEquipItemRepository.save(userEquipItem);
-                
-                return new NftTransferClientResponse(true);
-            } else {
-                return new NftTransferClientResponse(false, contractResponse.getErrorMessage());
-            }
-            
-        } catch (Exception e) {
-            return new NftTransferClientResponse(false, "NFT 전송 중 오류가 발생했습니다: " + e.getMessage());
-        }
-    }
-    
-    private ContractNftTransferResponse sendTransferToBlockchainServer(ContractNftTransferRequest request) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            
-            HttpEntity<ContractNftTransferRequest> entity = new HttpEntity<>(request, headers);
-            
-            String url = blockchainServerUrl + "/api/blockchain/nft/transfer";
-            ResponseEntity<ContractNftTransferResponse> response = restTemplate.postForEntity(
-                url, entity, ContractNftTransferResponse.class);
-            
-            return response.getBody();
-            
-        } catch (Exception e) {
-            return new ContractNftTransferResponse(false, "블록체인 서버 통신 오류: " + e.getMessage(), true);
-        }
-    }
-    
     
     private ContractNftListResponse getNftListFromBlockchainServer(ContractNftListRequest request) {
         try {
