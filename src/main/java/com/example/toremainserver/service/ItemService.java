@@ -115,8 +115,19 @@ public class ItemService {
             localItemId = userId * 1000L + itemId;
         }
         
-        UserConsumableItem userItem = new UserConsumableItem(userId, itemId, quantity, localItemId);
-        return userConsumableItemRepository.save(userItem);
+        // userId와 localItemId로 기존 아이템 조회
+        Optional<UserConsumableItem> existingItemOptional = userConsumableItemRepository.findByUserIdAndLocalItemId(userId, localItemId);
+        
+        if (existingItemOptional.isPresent()) {
+            // 기존 아이템이 있으면 수량만 증가
+            UserConsumableItem existingItem = existingItemOptional.get();
+            existingItem.setQuantity(existingItem.getQuantity() + quantity);
+            return userConsumableItemRepository.save(existingItem);
+        } else {
+            // 없으면 새로 추가
+            UserConsumableItem userItem = new UserConsumableItem(userId, itemId, quantity, localItemId);
+            return userConsumableItemRepository.save(userItem);
+        }
     }
     
     // 사용자에게 장비 아이템 추가
