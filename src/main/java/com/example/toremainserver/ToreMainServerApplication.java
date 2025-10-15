@@ -134,7 +134,7 @@ public class ToreMainServerApplication {
                 enhancementData.put("additional_attack", 10);
                 enhancementData.put("additional_defense", 5);
                 
-                UserEquipItem testEquip = new UserEquipItem(1L, 201, enhancementData, 0001L, 2001L);
+                UserEquipItem testEquip = new UserEquipItem(1L, 201, enhancementData, "0001", 2001L);
                 UserEquipItem savedEquip = userEquipItemRepository.save(testEquip);
                 System.out.println("장비 아이템 생성 성공 - ID: " + savedEquip.getId() + 
                                  ", UserID: " + savedEquip.getUserId() + 

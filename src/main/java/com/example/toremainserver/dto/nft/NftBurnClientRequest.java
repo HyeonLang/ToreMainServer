@@ -1,17 +1,14 @@
 package com.example.toremainserver.dto.nft;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 public class NftBurnClientRequest {
     
     @NotBlank(message = "사용자 지갑 주소는 필수입니다")
     private String userAddress;
     
-    @NotNull(message = "토큰 ID는 필수입니다")
-    @Positive(message = "토큰 ID는 양수여야 합니다")
-    private Long tokenId;
+    @NotBlank(message = "토큰 ID는 필수입니다")
+    private String tokenId;
     
     @NotBlank(message = "컨트랙트 주소는 필수입니다")
     private String contractAddress;
@@ -20,7 +17,7 @@ public class NftBurnClientRequest {
     public NftBurnClientRequest() {}
     
     // 생성자
-    public NftBurnClientRequest(String userAddress, Long tokenId, String contractAddress) {
+    public NftBurnClientRequest(String userAddress, String tokenId, String contractAddress) {
         this.userAddress = userAddress;
         this.tokenId = tokenId;
         this.contractAddress = contractAddress;
@@ -35,11 +32,11 @@ public class NftBurnClientRequest {
         this.userAddress = userAddress;
     }
     
-    public Long getTokenId() {
+    public String getTokenId() {
         return tokenId;
     }
     
-    public void setTokenId(Long tokenId) {
+    public void setTokenId(String tokenId) {
         this.tokenId = tokenId;
     }
     

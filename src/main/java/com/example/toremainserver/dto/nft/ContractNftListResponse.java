@@ -6,13 +6,13 @@ public class ContractNftListResponse {
     
     private boolean success;
     private String errorMessage;
-    private List<Long> nftIdList;
+    private List<String> nftIdList;
     
     // 기본 생성자
     public ContractNftListResponse() {}
     
     // 성공 응답 생성자
-    public ContractNftListResponse(boolean success, List<Long> nftIdList) {
+    public ContractNftListResponse(boolean success, List<String> nftIdList) {
         this.success = success;
         this.nftIdList = nftIdList;
     }
@@ -40,11 +40,11 @@ public class ContractNftListResponse {
         this.errorMessage = errorMessage;
     }
     
-    public List<Long> getNftIdList() {
+    public List<String> getNftIdList() {
         return nftIdList;
     }
     
-    public void setNftIdList(List<Long> nftIdList) {
+    public void setNftIdList(List<String> nftIdList) {
         this.nftIdList = nftIdList;
     }
 }

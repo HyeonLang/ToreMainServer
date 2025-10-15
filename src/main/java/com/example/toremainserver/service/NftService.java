@@ -64,7 +64,7 @@ public class NftService {
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + request.getUserId()));
             
             if (user.getWalletAddress() == null || user.getWalletAddress().isEmpty()) {
-                return new NftMintClientResponse(false, "사용자의 지갑 주소가 설정되지 않았습니다");
+                return NftMintClientResponse.failure("사용자의 지갑 주소가 설정되지 않았습니다");
             }
             
             // 2. 아이템 정의 조회
@@ -80,7 +80,7 @@ public class NftService {
 
             // 4. 아이템이 이미 NFT화되었는지 확인
             if (userEquipItem.getNftId() != null) {
-                return new NftMintClientResponse(false, "이미 NFT화된 아이템입니다");
+                return NftMintClientResponse.failure("이미 NFT화된 아이템입니다");
             }
             
             // 5. 아이템 데이터 구성
@@ -101,13 +101,13 @@ public class NftService {
                 userEquipItem.setNftId(contractResponse.getNftId());
                 userEquipItemRepository.save(userEquipItem);
                 
-                return new NftMintClientResponse(true, contractResponse.getNftId());
+                return NftMintClientResponse.success(contractResponse.getNftId());
             } else {
-                return new NftMintClientResponse(false, contractResponse.getErrorMessage());
+                return NftMintClientResponse.failure(contractResponse.getErrorMessage());
             }
             
         } catch (Exception e) {
-            return new NftMintClientResponse(false, "NFT화 중 오류가 발생했습니다: " + e.getMessage());
+            return NftMintClientResponse.failure("NFT화 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
     
@@ -188,7 +188,7 @@ public class NftService {
             return response.getBody();
             
         } catch (Exception e) {
-            return new ContractNftResponse(false, "블록체인 서버 통신 오류: " + e.getMessage());
+            return ContractNftResponse.failure("블록체인 서버 통신 오류: " + e.getMessage());
         }
     }
     
@@ -268,7 +268,7 @@ public class NftService {
      * @param walletAddress 지갑 주소
      * @param nftIdList 블록체인에서 받은 NFT ID 목록
      */
-    public void syncNftOwnership(String walletAddress, List<Long> nftIdList) {
+    public void syncNftOwnership(String walletAddress, List<String> nftIdList) {
         // 1. 지갑 주소로 사용자 조회
         User user = userRepository.findByWalletAddress(walletAddress);
         if (user == null) {
@@ -276,7 +276,7 @@ public class NftService {
         }
         
         // 2. 각 NFT ID에 대해 소유권 확인 및 동기화
-        for (Long nftId : nftIdList) {
+        for (String nftId : nftIdList) {
             Optional<UserEquipItem> userEquipItemOpt = userEquipItemRepository.findByNftId(nftId);
             
             if (userEquipItemOpt.isPresent()) {
@@ -341,10 +341,10 @@ public class NftService {
      * @param nftIds NFT ID 목록
      * @return 아이템 데이터 목록
      */
-    private List<ItemData> getItemDataByNftIds(List<Long> nftIds) {
+    private List<ItemData> getItemDataByNftIds(List<String> nftIds) {
         List<ItemData> itemDataList = new ArrayList<>();
         
-        for (Long nftId : nftIds) {
+        for (String nftId : nftIds) {
             // NFT ID로 UserEquipItem 조회
             Optional<UserEquipItem> userEquipItemOpt = userEquipItemRepository.findByNftId(nftId);
             

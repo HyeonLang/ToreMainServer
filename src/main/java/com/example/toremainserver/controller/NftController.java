@@ -45,7 +45,7 @@ public class NftController {
             }
             
         } catch (Exception e) {
-            NftMintClientResponse errorResponse = new NftMintClientResponse(false, "서버 오류: " + e.getMessage());
+            NftMintClientResponse errorResponse = NftMintClientResponse.failure("서버 오류: " + e.getMessage());
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
