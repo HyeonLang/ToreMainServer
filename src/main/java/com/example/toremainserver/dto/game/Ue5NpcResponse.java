@@ -1,6 +1,6 @@
 package com.example.toremainserver.dto.game;
 
-public class NpcChatResponse {
+public class Ue5NpcResponse {
     
     // 대화 기록을 위한 내부 클래스
     public static class ChatHistory {
@@ -46,23 +46,13 @@ public class NpcChatResponse {
     private Long npcId;
     private ChatHistory npcResponse;
     
-    // 이전 대화 요약 정보 (AI 서버에서 받아온 요약 문자열)
-    private String previousConversationSummary;
-    
     // 기본 생성자
-    public NpcChatResponse() {}
+    public Ue5NpcResponse() {}
     
     // 생성자
-    public NpcChatResponse(Long npcId, ChatHistory npcResponse) {
+    public Ue5NpcResponse(Long npcId, ChatHistory npcResponse) {
         this.npcId = npcId;
         this.npcResponse = npcResponse;
-    }
-    
-    // 생성자 (previousConversationSummary 포함)
-    public NpcChatResponse(Long npcId, ChatHistory npcResponse, String previousConversationSummary) {
-        this.npcId = npcId;
-        this.npcResponse = npcResponse;
-        this.previousConversationSummary = previousConversationSummary;
     }
     
     // Getter와 Setter
@@ -81,12 +71,5 @@ public class NpcChatResponse {
     public void setNpcResponse(ChatHistory npcResponse) {
         this.npcResponse = npcResponse;
     }
-    
-    public String getPreviousConversationSummary() {
-        return previousConversationSummary;
-    }
-    
-    public void setPreviousConversationSummary(String previousConversationSummary) {
-        this.previousConversationSummary = previousConversationSummary;
-    }
 }
+

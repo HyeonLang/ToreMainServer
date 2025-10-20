@@ -4,23 +4,6 @@ import java.util.List;
 
 public class NpcChatRequest {
     
-    // 대화 요청 종류 enum
-    public enum ChatType {
-        START("시작"),
-        CONTINUE("대화중"),
-        END("종료");
-        
-        private final String value;
-        
-        ChatType(String value) {
-            this.value = value;
-        }
-        
-        public String getValue() {
-            return value;
-        }
-    }
-    
     // 이전 대화 기록을 위한 내부 클래스
     public static class ChatHistory {
         private String speaker; // "player" 또는 "npc"
@@ -62,7 +45,6 @@ public class NpcChatRequest {
     }
     
     // UE5에서 받는 필드들
-    private ChatType chatType;
     private Long npcId;
     private String playerName;
     private String currentPlayerMessage;
@@ -82,9 +64,8 @@ public class NpcChatRequest {
     public NpcChatRequest() {}
     
     // UE5 요청용 생성자
-    public NpcChatRequest(ChatType chatType, Long npcId, String playerName,
+    public NpcChatRequest(Long npcId, String playerName,
                          String currentPlayerMessage, List<ChatHistory> previousChatHistory) {
-        this.chatType = chatType;
         this.npcId = npcId;
         this.playerName = playerName;
         this.currentPlayerMessage = currentPlayerMessage;
@@ -92,10 +73,9 @@ public class NpcChatRequest {
     }
     
     // 완전한 요청용 생성자 (DB 정보 포함)
-    public NpcChatRequest(ChatType chatType, Long npcId, String npcName, String playerName,
+    public NpcChatRequest(Long npcId, String npcName, String playerName,
                          String npcDescription, String playerDescription, String systemMessages,
                          String currentPlayerMessage, List<ChatHistory> previousChatHistory) {
-        this.chatType = chatType;
         this.npcId = npcId;
         this.npcName = npcName;
         this.playerName = playerName;
@@ -107,11 +87,10 @@ public class NpcChatRequest {
     }
     
     // 완전한 요청용 생성자 (previousConversationSummary 포함)
-    public NpcChatRequest(ChatType chatType, Long npcId, String npcName, String playerName,
+    public NpcChatRequest(Long npcId, String npcName, String playerName,
                          String npcDescription, String playerDescription, String systemMessages,
                          String currentPlayerMessage, List<ChatHistory> previousChatHistory,
                          String previousConversationSummary) {
-        this.chatType = chatType;
         this.npcId = npcId;
         this.npcName = npcName;
         this.playerName = playerName;
@@ -124,11 +103,10 @@ public class NpcChatRequest {
     }
     
     // 완전한 요청용 생성자 (apiKey 포함)
-    public NpcChatRequest(ChatType chatType, Long npcId, String npcName, String playerName,
+    public NpcChatRequest(Long npcId, String npcName, String playerName,
                          String npcDescription, String playerDescription, String systemMessages,
                          String currentPlayerMessage, List<ChatHistory> previousChatHistory,
                          String previousConversationSummary, String apiKey) {
-        this.chatType = chatType;
         this.npcId = npcId;
         this.npcName = npcName;
         this.playerName = playerName;
@@ -142,14 +120,6 @@ public class NpcChatRequest {
     }
     
     // Getter와 Setter
-    public ChatType getChatType() {
-        return chatType;
-    }
-    
-    public void setChatType(ChatType chatType) {
-        this.chatType = chatType;
-    }
-    
     public Long getNpcId() {
         return npcId;
     }

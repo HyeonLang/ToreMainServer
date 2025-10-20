@@ -1,7 +1,8 @@
 package com.example.toremainserver.controller;
 
-import com.example.toremainserver.dto.game.NpcChatResponse;
 import com.example.toremainserver.dto.game.Ue5NpcRequest;
+import com.example.toremainserver.dto.game.Ue5NpcResponse;
+import com.example.toremainserver.entity.Conversation;
 import com.example.toremainserver.service.GameEventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +58,7 @@ public class GameEventController {
      * 5. 응답을 UE5로 그대로 반환 (previousConversationSummary 포함)
      */
     @PostMapping("/npc")
-    public ResponseEntity<NpcChatResponse> ue5Npc(@RequestBody Ue5NpcRequest ue5Request) {
+    public ResponseEntity<Ue5NpcResponse> ue5Npc(@RequestBody Ue5NpcRequest ue5Request) {
         return gameEventService.forwardNpcRequest(ue5Request);
     }
 
@@ -83,5 +84,49 @@ public class GameEventController {
     public ResponseEntity<?> ue5Material(@RequestBody Map<String, Object> body) {
         // TODO: UE5에서 받은 정보를 가공하거나 추가 처리
         return gameEventService.forwardMaterialRequest(body);
+    }
+    
+    /**
+     * userId와 npcId로 Conversation을 조회합니다.
+     *
+     * 요청 예시:
+     * GET /api/conversation?userId=123&npcId=5
+     *
+     * 응답 예시:
+     * {
+     *   "conversationId": 1,
+     *   "userId": 123,
+     *   "npcId": 5,
+     *   "recentHistory": [
+     *     {
+     *       "speaker": "player",
+     *       "message": "안녕하세요",
+     *       "timestamp": "2025-10-20T10:00:00"
+     *     },
+     *     {
+     *       "speaker": "npc",
+     *       "message": "반갑네!",
+     *       "timestamp": "2025-10-20T10:00:05"
+     *     }
+     *   ],
+     *   "summary": "이전 대화 요약...",
+     *   "lastUpdated": "2025-10-20T10:00:05"
+     * }
+     *
+     * @param userId 유저 ID
+     * @param npcId NPC ID
+     * @return Conversation (없으면 404)
+     */
+    @GetMapping("/conversation")
+    public ResponseEntity<Conversation> getConversation(
+            @RequestParam Long userId,
+            @RequestParam Long npcId) {
+        Conversation conversation = gameEventService.getConversation(userId, npcId);
+        
+        if (conversation == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        return ResponseEntity.ok(conversation);
     }
 } 

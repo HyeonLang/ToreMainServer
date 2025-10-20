@@ -5,24 +5,7 @@ import java.util.Map;
 
 public class Ue5NpcRequest {
     
-    // 대화 요청 종류 enum (NpcChatRequest와 동일)
-    public enum ChatType {
-        START("시작"),
-        CONTINUE("대화중"),
-        END("종료");
-        
-        private final String value;
-        
-        ChatType(String value) {
-            this.value = value;
-        }
-        
-        public String getValue() {
-            return value;
-        }
-    }
-    
-    // 이전 대화 기록을 위한 내부 클래스 (NpcChatRequest와 동일)
+    // 이전 대화 기록을 위한 내부 클래스
     public static class ChatHistory {
         private String speaker; // "player" 또는 "npc"
         private String message;
@@ -63,10 +46,9 @@ public class Ue5NpcRequest {
     }
     
     // UE5에서 받는 필드들
-    private ChatType chatType;
     private Long npcId;
-    private String playerName;
-    private String currentPlayerMessage;
+    private Long userId;
+    private ChatHistory currentPlayerMessage;
     private List<ChatHistory> previousChatHistory;
     private Map<String, Object> playerDescription; // 플레이어 설명 (JSON)
     private String apiKey; // API 키
@@ -78,24 +60,22 @@ public class Ue5NpcRequest {
     public Ue5NpcRequest() {}
     
     // 생성자
-    public Ue5NpcRequest(ChatType chatType, Long npcId, String playerName,
-                         String currentPlayerMessage, List<ChatHistory> previousChatHistory,
+    public Ue5NpcRequest(Long npcId, Long userId,
+                         ChatHistory currentPlayerMessage, List<ChatHistory> previousChatHistory,
                          Map<String, Object> playerDescription) {
-        this.chatType = chatType;
         this.npcId = npcId;
-        this.playerName = playerName;
+        this.userId = userId;
         this.currentPlayerMessage = currentPlayerMessage;
         this.previousChatHistory = previousChatHistory;
         this.playerDescription = playerDescription;
     }
     
     // 생성자 (previousConversationSummary 포함)
-    public Ue5NpcRequest(ChatType chatType, Long npcId, String playerName,
-                         String currentPlayerMessage, List<ChatHistory> previousChatHistory,
+    public Ue5NpcRequest(Long npcId, Long userId,
+                         ChatHistory currentPlayerMessage, List<ChatHistory> previousChatHistory,
                          Map<String, Object> playerDescription, String previousConversationSummary) {
-        this.chatType = chatType;
         this.npcId = npcId;
-        this.playerName = playerName;
+        this.userId = userId;
         this.currentPlayerMessage = currentPlayerMessage;
         this.previousChatHistory = previousChatHistory;
         this.playerDescription = playerDescription;
@@ -103,12 +83,11 @@ public class Ue5NpcRequest {
     }
     
     // 생성자 (apiKey 포함)
-    public Ue5NpcRequest(ChatType chatType, Long npcId, String playerName,
-                         String currentPlayerMessage, List<ChatHistory> previousChatHistory,
+    public Ue5NpcRequest(Long npcId, Long userId,
+                         ChatHistory currentPlayerMessage, List<ChatHistory> previousChatHistory,
                          Map<String, Object> playerDescription, String previousConversationSummary, String apiKey) {
-        this.chatType = chatType;
         this.npcId = npcId;
-        this.playerName = playerName;
+        this.userId = userId;
         this.currentPlayerMessage = currentPlayerMessage;
         this.previousChatHistory = previousChatHistory;
         this.playerDescription = playerDescription;
@@ -117,14 +96,6 @@ public class Ue5NpcRequest {
     }
     
     // Getter와 Setter
-    public ChatType getChatType() {
-        return chatType;
-    }
-    
-    public void setChatType(ChatType chatType) {
-        this.chatType = chatType;
-    }
-    
     public Long getNpcId() {
         return npcId;
     }
@@ -133,19 +104,19 @@ public class Ue5NpcRequest {
         this.npcId = npcId;
     }
     
-    public String getPlayerName() {
-        return playerName;
+    public Long getUserId() {
+        return userId;
     }
     
-    public void setPlayerName(String playerName) {
-        this.playerName = playerName;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
     
-    public String getCurrentPlayerMessage() {
+    public ChatHistory getCurrentPlayerMessage() {
         return currentPlayerMessage;
     }
     
-    public void setCurrentPlayerMessage(String currentPlayerMessage) {
+    public void setCurrentPlayerMessage(ChatHistory currentPlayerMessage) {
         this.currentPlayerMessage = currentPlayerMessage;
     }
     
