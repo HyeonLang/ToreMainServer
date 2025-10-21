@@ -58,22 +58,20 @@ public class GameEventService {
         Npc npc = npcOptional.get();
         String npcName = npc.getName();
         
-        // npcInfo에서 description 추출
-        String npcDescription = "";
-        if (npc.getNpcInfo() != null && npc.getNpcInfo().containsKey("description")) {
-            npcDescription = (String) npc.getNpcInfo().get("description");
-        }
+        // npcInfo에서 페르소나 정보를 추출하여 포맷팅
+        String npcDescription = buildNpcDescription(npc);
         
         // DB에서 User 정보 조회
         Optional<User> userOptional = userRepository.findById(ue5Request.getUserId());
         String playerName = "Unknown";
-        String playerDescription = "모험가"; // 기본값
         
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             playerName = user.getPlayername();
-            playerDescription = user.getPlayername() + " (레벨: " + user.getId() + ")";
         }
+        
+        // UE5 요청의 playerDescription JSON을 포맷팅된 문자열로 변환
+        String playerDescription = buildPlayerDescription(ue5Request.getPlayerDescription(), playerName);
         
         String systemMessages = "시스템 메시지"; // DB에서 조회
         
@@ -275,6 +273,127 @@ public class GameEventService {
         
         // DB에 저장
         conversationRepository.save(conversation);
+    }
+    
+    /**
+     * NPC의 npcInfo를 AI 프롬프트 형식의 문자열로 변환합니다.
+     * @param npc NPC 엔티티
+     * @return 포맷팅된 NPC 설명 문자열
+     */
+    private String buildNpcDescription(Npc npc) {
+        if (npc.getNpcInfo() == null || npc.getNpcInfo().isEmpty()) {
+            return "";
+        }
+        
+        Map<String, Object> npcInfo = npc.getNpcInfo();
+        StringBuilder description = new StringBuilder();
+        
+        description.append("# 시스템 명령 및 페르소나 정의\n");
+        description.append("당신은 이제부터 '").append(npc.getName()).append("'라는 ");
+        description.append(getStringValue(npcInfo, "occupation", "NPC"));
+        description.append(" NPC 역할을 수행해야 합니다.\n");
+        description.append("다음의 정보를 철저히 준수하여 사용자와 대화하십시오.\n\n");
+        
+        description.append("## ").append(npc.getName()).append(" NPC 페르소나\n");
+        description.append("* **이름:** ").append(npc.getName()).append("\n");
+        description.append("* **성별:** ").append(getStringValue(npcInfo, "gender", "알 수 없음")).append("\n");
+        description.append("* **나이:** ").append(getStringValue(npcInfo, "age", "알 수 없음")).append("세\n");
+        description.append("* **위치:** ").append(getStringValue(npcInfo, "location", "알 수 없음")).append("\n");
+        description.append("* **직업:** ").append(getStringValue(npcInfo, "occupation", "알 수 없음")).append("\n");
+        description.append("* **성격:** ").append(getStringValue(npcInfo, "personality", "알 수 없음")).append("\n");
+        
+        String persona = getStringValue(npcInfo, "persona", "");
+        if (!persona.isEmpty()) {
+            description.append("* **스토리/캐릭터 배경:** ").append(persona).append("\n");
+        }
+        
+        description.append("\n## 대화 스타일 (Speaking Style)\n");
+        String speakingStyle = getStringValue(npcInfo, "speakingStyle", "평범한 말투로 대화합니다.");
+        description.append("* **특징:** ").append(speakingStyle).append("\n");
+        
+        return description.toString();
+    }
+    
+    /**
+     * 플레이어의 상세 정보를 AI 프롬프트 형식의 문자열로 변환합니다.
+     * @param playerDescriptionMap UE5에서 받은 플레이어 정보 맵
+     * @param playerName 플레이어 이름
+     * @return 포맷팅된 플레이어 설명 문자열
+     */
+    private String buildPlayerDescription(Map<String, Object> playerDescriptionMap, String playerName) {
+        if (playerDescriptionMap == null || playerDescriptionMap.isEmpty()) {
+            // 기본 설명 반환
+            return "이름: " + playerName + "\n정보: 모험가";
+        }
+        
+        StringBuilder description = new StringBuilder();
+        
+        description.append("## 플레이어 정보\n");
+        description.append("* **이름:** ").append(playerName).append("\n");
+        
+        // 레벨 정보
+        if (playerDescriptionMap.containsKey("level")) {
+            description.append("* **레벨:** ").append(getStringValue(playerDescriptionMap, "level", "1")).append("\n");
+        }
+        
+        // 직업/클래스 정보
+        if (playerDescriptionMap.containsKey("class")) {
+            description.append("* **직업:** ").append(getStringValue(playerDescriptionMap, "class", "모험가")).append("\n");
+        }
+        
+        // 현재 위치
+        if (playerDescriptionMap.containsKey("currentLocation")) {
+            description.append("* **현재 위치:** ").append(getStringValue(playerDescriptionMap, "currentLocation", "알 수 없음")).append("\n");
+        }
+        
+        // 소지금
+        if (playerDescriptionMap.containsKey("gold")) {
+            description.append("* **소지금:** ").append(getStringValue(playerDescriptionMap, "gold", "0")).append(" 골드\n");
+        }
+        
+        // 평판
+        if (playerDescriptionMap.containsKey("reputation")) {
+            description.append("* **평판:** ").append(getStringValue(playerDescriptionMap, "reputation", "보통")).append("\n");
+        }
+        
+        // 최근 업적
+        if (playerDescriptionMap.containsKey("recentAchievement")) {
+            description.append("* **최근 업적:** ").append(getStringValue(playerDescriptionMap, "recentAchievement", "없음")).append("\n");
+        }
+        
+        // 현재 퀘스트
+        if (playerDescriptionMap.containsKey("currentQuest")) {
+            description.append("* **진행 중인 퀘스트:** ").append(getStringValue(playerDescriptionMap, "currentQuest", "없음")).append("\n");
+        }
+        
+        // 추가 정보가 있다면 포함
+        for (Map.Entry<String, Object> entry : playerDescriptionMap.entrySet()) {
+            String key = entry.getKey();
+            // 이미 처리한 필드는 건너뛰기
+            if (!key.equals("playername") && !key.equals("level") && !key.equals("class") 
+                && !key.equals("currentLocation") && !key.equals("gold") 
+                && !key.equals("reputation") && !key.equals("recentAchievement") 
+                && !key.equals("currentQuest")) {
+                description.append("* **").append(key).append(":** ").append(entry.getValue()).append("\n");
+            }
+        }
+        
+        return description.toString();
+    }
+    
+    /**
+     * Map에서 문자열 값을 안전하게 추출합니다.
+     * @param map 데이터 맵
+     * @param key 키
+     * @param defaultValue 기본값
+     * @return 추출된 값 또는 기본값
+     */
+    private String getStringValue(Map<String, Object> map, String key, String defaultValue) {
+        Object value = map.get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return value.toString();
     }
     
 } 
