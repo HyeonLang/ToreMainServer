@@ -48,7 +48,7 @@ public class GameEventController {
      *   "previousConversationSummary": "AI 서버에서 업데이트된 대화 요약 정보"
      * }
      *
-     * 엔드포인트: POST /api/npc
+     * 엔드포인트: POST /api/npc/chat
      *
      * 내부 처리 흐름:
      * 1. UE5에서 Ue5NpcRequest 정보를 POST로 받음
@@ -57,7 +57,7 @@ public class GameEventController {
      * 4. /api.ai/npc로 POST 요청
      * 5. 응답을 UE5로 그대로 반환 (previousConversationSummary 포함)
      */
-    @PostMapping("/npc")
+    @PostMapping("/npc/chat")
     public ResponseEntity<Ue5NpcResponse> ue5Npc(@RequestBody Ue5NpcRequest ue5Request) {
         return gameEventService.forwardNpcRequest(ue5Request);
     }
