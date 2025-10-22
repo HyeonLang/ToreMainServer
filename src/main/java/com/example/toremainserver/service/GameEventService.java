@@ -10,6 +10,9 @@ import com.example.toremainserver.entity.User;
 import com.example.toremainserver.repository.ConversationRepository;
 import com.example.toremainserver.repository.NpcRepository;
 import com.example.toremainserver.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -22,6 +25,8 @@ import java.util.Optional;
 
 @Service
 public class GameEventService {
+    private static final Logger logger = LoggerFactory.getLogger(GameEventService.class);
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final RestTemplate restTemplate;
     private final String aiServerUrl;
     private final NpcRepository npcRepository;
@@ -124,20 +129,54 @@ public class GameEventService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<NpcChatRequest> request = new HttpEntity<>(npcChatRequest, headers);
-        // 파이썬 AI 서버의 NPC 엔드포인트로 POST 요청
-        String url = aiServerUrl + "/api.ai/npc";
-        ResponseEntity<NpcChatResponse> response = restTemplate.postForEntity(url, request, NpcChatResponse.class);
         
-        // AI 서버 응답이 성공적이고 responseBody가 있으면 Conversation 업데이트
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-            updateConversationHistory(ue5Request, response.getBody());
+        // LLM 서버 요청 로그 출력
+        try {
+            String requestJson = objectMapper.writerWithDefaultPrettyPrinter()
+                .writeValueAsString(npcChatRequest);
+            logger.info("=== LLM Server Request ===");
+            logger.info("URL: {}/api.ai/llm/generate", aiServerUrl);
+            logger.info("Request Body:\n{}", requestJson);
+        } catch (Exception e) {
+            logger.error("Failed to log LLM request", e);
         }
         
-        // NpcChatResponse를 Ue5NpcResponse로 변환
-        Ue5NpcResponse ue5Response = convertToUe5NpcResponse(response.getBody());
+        // 파이썬 AI 서버의 NPC 엔드포인트로 POST 요청
+        String url = aiServerUrl + "/api.ai/llm/generate";
         
-        // 처리된 응답을 UE5로 반환
-        return ResponseEntity.status(response.getStatusCode()).body(ue5Response);
+        ResponseEntity<NpcChatResponse> response;
+        try {
+            response = restTemplate.postForEntity(url, request, NpcChatResponse.class);
+            
+            // LLM 서버 응답 로그 출력 (성공)
+            try {
+                String responseJson = objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(response.getBody());
+                logger.info("=== LLM Server Response (SUCCESS) ===");
+                logger.info("Status Code: {}", response.getStatusCode());
+                logger.info("Response Body:\n{}", responseJson);
+            } catch (Exception e) {
+                logger.error("Failed to log LLM response", e);
+            }
+            
+            // AI 서버 응답이 성공적이고 responseBody가 있으면 Conversation 업데이트
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                updateConversationHistory(ue5Request, response.getBody());
+            }
+            
+            // NpcChatResponse를 Ue5NpcResponse로 변환
+            Ue5NpcResponse ue5Response = convertToUe5NpcResponse(response.getBody());
+            
+            // 처리된 응답을 UE5로 반환
+            return ResponseEntity.status(response.getStatusCode()).body(ue5Response);
+            
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            // LLM 서버 에러 응답 로그 출력
+            logger.error("=== LLM Server Response (ERROR) ===");
+            logger.error("Status Code: {}", e.getStatusCode());
+            logger.error("Error Response Body:\n{}", e.getResponseBodyAsString());
+            throw e;
+        }
     }
 
     /**
@@ -259,7 +298,7 @@ public class GameEventService {
         }
         
         // 3. 22개 이상이면 앞의 2개 제거
-        if (recentHistory.size() >= 22) {
+        if (recentHistory.size() >= 8) {
             recentHistory = new ArrayList<>(recentHistory.subList(2, recentHistory.size()));
             
             // 4. summary 업데이트
