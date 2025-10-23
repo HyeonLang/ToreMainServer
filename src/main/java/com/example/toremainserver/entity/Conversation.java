@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Entity
@@ -73,14 +74,14 @@ public class Conversation {
     
     // 기본 생성자
     public Conversation() {
-        this.lastUpdated = LocalDateTime.now();
+        this.lastUpdated = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     }
     
     // 생성자
     public Conversation(Long userId, Long npcId) {
         this.userId = userId;
         this.npcId = npcId;
-        this.lastUpdated = LocalDateTime.now();
+        this.lastUpdated = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     }
     
     public Conversation(Long userId, Long npcId, List<ChatHistory> recentHistory, String summary) {
@@ -88,7 +89,7 @@ public class Conversation {
         this.npcId = npcId;
         this.recentHistory = recentHistory;
         this.summary = summary;
-        this.lastUpdated = LocalDateTime.now();
+        this.lastUpdated = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     }
     
     // Getter와 Setter
@@ -144,7 +145,7 @@ public class Conversation {
     public void updateConversation(List<ChatHistory> newHistory, String newSummary) {
         this.recentHistory = newHistory;
         this.summary = newSummary;
-        this.lastUpdated = LocalDateTime.now();
+        this.lastUpdated = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     }
 }
 

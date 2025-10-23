@@ -3,10 +3,12 @@ package com.example.toremainserver.controller;
 import com.example.toremainserver.dto.game.Ue5NpcRequest;
 import com.example.toremainserver.dto.game.Ue5NpcResponse;
 import com.example.toremainserver.entity.Conversation;
+import com.example.toremainserver.entity.Npc;
 import com.example.toremainserver.service.GameEventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -90,7 +92,7 @@ public class GameEventController {
      * userId와 npcId로 Conversation을 조회합니다.
      *
      * 요청 예시:
-     * GET /api/conversation?userId=123&npcId=5
+     * GET /api/npc/conversations?userId=123&npcId=5
      *
      * 응답 예시:
      * {
@@ -117,16 +119,51 @@ public class GameEventController {
      * @param npcId NPC ID
      * @return Conversation (없으면 404)
      */
-    @GetMapping("/conversation")
-    public ResponseEntity<Conversation> getConversation(
+    @GetMapping("/npc/conversations")
+    public ResponseEntity<Conversation> getNpcConversations(
             @RequestParam Long userId,
             @RequestParam Long npcId) {
-        Conversation conversation = gameEventService.getConversation(userId, npcId);
+        Conversation conversation = gameEventService.getNpcConversations(userId, npcId);
         
         if (conversation == null) {
             return ResponseEntity.notFound().build();
         }
         
         return ResponseEntity.ok(conversation);
+    }
+    
+    /**
+     * 모든 NPC 정보를 조회합니다.
+     *
+     * 요청 예시:
+     * GET /api/npcs
+     *
+     * 응답 예시:
+     * [
+     *   {
+     *     "npcId": 1,
+     *     "name": "마을 촌장",
+     *     "npcInfo": {
+     *       "gender": "남성",
+     *       "age": "60",
+     *       "occupation": "촌장",
+     *       "personality": "친절한",
+     *       "persona": "마을을 오래 지켜온 촌장",
+     *       "speakingStyle": "존댓말을 사용하며 차분한 말투"
+     *     }
+     *   },
+     *   {
+     *     "npcId": 2,
+     *     "name": "대장간 주인",
+     *     "npcInfo": {...}
+     *   }
+     * ]
+     *
+     * @return 모든 NPC 리스트
+     */
+    @GetMapping("/npcs")
+    public ResponseEntity<List<Npc>> getAllNpcs() {
+        List<Npc> npcs = gameEventService.getAllNpcs();
+        return ResponseEntity.ok(npcs);
     }
 } 

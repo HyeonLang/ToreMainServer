@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -245,12 +247,34 @@ public class GameEventService {
     
     /**
      * userId와 npcId로 Conversation을 조회합니다.
+     * User나 NPC가 존재하지 않으면 null 반환 (404),
+     * 둘 다 존재하지만 Conversation이 없으면 빈 객체 반환 (200)
      * @param userId 유저 ID
      * @param npcId NPC ID
-     * @return Conversation (없으면 null)
+     * @return Conversation (User나 NPC가 없으면 null)
      */
-    public Conversation getConversation(Long userId, Long npcId) {
-        return conversationRepository.findByUserIdAndNpcId(userId, npcId).orElse(null);
+    public Conversation getNpcConversations(Long userId, Long npcId) {
+        // User 존재 여부 확인
+        if (!userRepository.existsById(userId)) {
+            return null; // User가 없으면 404
+        }
+        
+        // NPC 존재 여부 확인
+        if (!npcRepository.existsByNpcId(npcId)) {
+            return null; // NPC가 없으면 404
+        }
+        
+        // User와 NPC 모두 존재하면 Conversation 조회 또는 빈 객체 반환
+        return conversationRepository.findByUserIdAndNpcId(userId, npcId)
+            .orElse(new Conversation(userId, npcId));
+    }
+    
+    /**
+     * 모든 NPC 정보를 조회합니다.
+     * @return 모든 NPC 리스트
+     */
+    public List<Npc> getAllNpcs() {
+        return npcRepository.findAll();
     }
     
     /**
@@ -309,6 +333,7 @@ public class GameEventService {
         
         // Conversation 업데이트
         conversation.setRecentHistory(recentHistory);
+        conversation.setLastUpdated(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         
         // DB에 저장
         conversationRepository.save(conversation);
