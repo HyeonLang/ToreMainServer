@@ -1,7 +1,6 @@
 package com.example.toremainserver.entity;
 
 import jakarta.persistence.*;
-import java.util.Objects;
 
 @Entity
 @Table(name = "user_consumable_items")
@@ -13,30 +12,20 @@ public class UserConsumableItem {
     private Long userId;
     
     @Id
-    @Column(name = "item_id")
-    private Integer itemId;
+    @Column(name = "item_def_id")
+    private Long itemDefId;  // ItemDefinition.id 참조 (복합키)
     
     @Column(name = "quantity", columnDefinition = "INT DEFAULT 0")
     private Integer quantity = 0;
-    
-    @Column(name = "local_item_id", nullable = false)
-    private Long localItemId;
     
     // 기본 생성자
     public UserConsumableItem() {}
     
     // 생성자
-    public UserConsumableItem(Long userId, Integer itemId, Integer quantity) {
+    public UserConsumableItem(Long userId, Long itemDefId, Integer quantity) {
         this.userId = userId;
-        this.itemId = itemId;
+        this.itemDefId = itemDefId;
         this.quantity = quantity;
-    }
-    
-    public UserConsumableItem(Long userId, Integer itemId, Integer quantity, Long localItemId) {
-        this.userId = userId;
-        this.itemId = itemId;
-        this.quantity = quantity;
-        this.localItemId = localItemId;
     }
     
     // Getter와 Setter
@@ -48,12 +37,12 @@ public class UserConsumableItem {
         this.userId = userId;
     }
     
-    public Integer getItemId() {
-        return itemId;
+    public Long getItemDefId() {
+        return itemDefId;
     }
     
-    public void setItemId(Integer itemId) {
-        this.itemId = itemId;
+    public void setItemDefId(Long itemDefId) {
+        this.itemDefId = itemDefId;
     }
     
     public Integer getQuantity() {
@@ -62,14 +51,6 @@ public class UserConsumableItem {
     
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
-    }
-    
-    public Long getLocalItemId() {
-        return localItemId;
-    }
-    
-    public void setLocalItemId(Long localItemId) {
-        this.localItemId = localItemId;
     }
     
 }

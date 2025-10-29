@@ -8,11 +8,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Entity
-@Table(name = "user_game_profiles")
+@Table(name = "user_game_profiles",
+       indexes = {
+           @Index(name = "idx_user_id", columnList = "user_id")
+       })
 public class UserGameProfile {
     
     @Id
-    @Column(name = "user_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "profile_id")  // DB 컬럼명은 명확하게
+    private Long id;               // Java 필드명은 간결하게
+    
+    @Column(name = "user_id", nullable = false)
     private Long userId;
     
     @Column(nullable = false)
@@ -40,10 +47,18 @@ public class UserGameProfile {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
     
+    // 낙관적 락을 위한 버전 필드 (동시성 제어)
+    @Version
+    @Column(name = "version")
+    private Long version;
+    
+    // 프로필 이름 (예: "메인 캐릭터", "서브1")
+    @Column(name = "profile_name", nullable = false)
+    private String profileName;
+    
     // 연관 관계 (선택사항)
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
     
     // 기본 생성자
@@ -53,19 +68,36 @@ public class UserGameProfile {
     }
     
     // 생성자
-    public UserGameProfile(Long userId) {
+    public UserGameProfile(Long userId, String profileName) {
         this.userId = userId;
+        this.profileName = profileName;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
     
     // Getter and Setter
+    public Long getId() {
+        return id;
+    }
+    
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
     public Long getUserId() {
         return userId;
     }
     
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+    
+    public String getProfileName() {
+        return profileName;
+    }
+    
+    public void setProfileName(String profileName) {
+        this.profileName = profileName;
     }
     
     public Integer getLevel() {
@@ -130,6 +162,14 @@ public class UserGameProfile {
     
     public void setUser(User user) {
         this.user = user;
+    }
+    
+    public Long getVersion() {
+        return version;
+    }
+    
+    public void setVersion(Long version) {
+        this.version = version;
     }
     
     // 장비 관련 유틸리티 메서드

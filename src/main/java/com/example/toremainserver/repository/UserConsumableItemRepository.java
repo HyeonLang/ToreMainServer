@@ -14,12 +14,9 @@ public interface UserConsumableItemRepository extends JpaRepository<UserConsumab
     // 사용자별 소비 아이템 조회
     List<UserConsumableItem> findByUserId(Long userId);
     
-    // 사용자와 아이템 ID로 조회
-    Optional<UserConsumableItem> findByUserIdAndItemId(Long userId, Integer itemId);
+    // 사용자와 아이템 정의 ID로 조회
+    Optional<UserConsumableItem> findByUserIdAndItemDefId(Long userId, Long itemDefId);
     
-    // 사용자 ID와 로컬 아이템 ID로 조회
-    Optional<UserConsumableItem> findByUserIdAndLocalItemId(Long userId, Long localItemId);
-    
-    // 사용자별 특정 아이템 수량 조회
-    Integer findQuantityByUserIdAndItemId(Long userId, Integer itemId);
+    // 사용자별 특정 아이템 정의 수량 조회
+    Integer findQuantityByUserIdAndItemDefId(Long userId, Long itemDefId);
 } 

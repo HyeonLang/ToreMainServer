@@ -15,8 +15,8 @@ public interface UserEquipItemRepository extends JpaRepository<UserEquipItem, Lo
     // 사용자별 장비 아이템 조회
     List<UserEquipItem> findByUserId(Long userId);
     
-    // 사용자와 아이템 ID로 조회
-    List<UserEquipItem> findByUserIdAndItemId(Long userId, Integer itemId);
+    // 사용자와 아이템 정의 ID로 조회
+    List<UserEquipItem> findByUserIdAndItemDefId(Long userId, Long itemDefId);
     
     // NFT ID로 조회 (단일)
     Optional<UserEquipItem> findByNftId(String nftId);
@@ -25,8 +25,8 @@ public interface UserEquipItemRepository extends JpaRepository<UserEquipItem, Lo
     @Query("SELECT uei FROM UserEquipItem uei WHERE uei.nftId = :nftId")
     List<UserEquipItem> findAllByNftId(@Param("nftId") String nftId);
     
-    // 사용자별 특정 아이템 개수 조회
-    Long countByUserIdAndItemId(Long userId, Integer itemId);
+    // 사용자별 특정 아이템 정의 개수 조회
+    Long countByUserIdAndItemDefId(Long userId, Long itemDefId);
     
     // 지갑 주소로 NFT화된 아이템 조회 (nftId가 null이 아닌 것들)
     @Query("SELECT uei FROM UserEquipItem uei " +
@@ -38,9 +38,9 @@ public interface UserEquipItemRepository extends JpaRepository<UserEquipItem, Lo
     @Query("SELECT uei FROM UserEquipItem uei WHERE uei.userId = :userId AND uei.nftId IS NOT NULL")
     List<UserEquipItem> findNftItemsByUserId(@Param("userId") Long userId);
     
-    // 사용자 ID, 아이템 ID, 로컬 아이템 ID로 조회
-    Optional<UserEquipItem> findByUserIdAndItemIdAndLocalItemId(Long userId, Integer itemId, Long localItemId);
-    
-    // 사용자 ID와 로컬 아이템 ID로 조회
-    Optional<UserEquipItem> findByUserIdAndLocalItemId(Long userId, Long localItemId);
+    // 참고: 기본 제공 메서드
+    // - Optional<UserEquipItem> findById(Long id)         // PK로 단일 장비 조회
+    // - List<UserEquipItem> findByUserId(Long userId)     // 유저의 모든 장비
+    // - UserEquipItem save(UserEquipItem item)            // 저장/수정
+    // - void deleteById(Long id)                          // 삭제
 } 

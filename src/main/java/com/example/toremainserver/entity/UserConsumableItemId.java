@@ -5,13 +5,13 @@ import java.util.Objects;
 
 public class UserConsumableItemId implements Serializable {
     private Long userId;
-    private Integer itemId;
+    private Long itemDefId;
     
     public UserConsumableItemId() {}
     
-    public UserConsumableItemId(Long userId, Integer itemId) {
+    public UserConsumableItemId(Long userId, Long itemDefId) {
         this.userId = userId;
-        this.itemId = itemId;
+        this.itemDefId = itemDefId;
     }
     
     public Long getUserId() {
@@ -22,12 +22,12 @@ public class UserConsumableItemId implements Serializable {
         this.userId = userId;
     }
     
-    public Integer getItemId() {
-        return itemId;
+    public Long getItemDefId() {
+        return itemDefId;
     }
     
-    public void setItemId(Integer itemId) {
-        this.itemId = itemId;
+    public void setItemDefId(Long itemDefId) {
+        this.itemDefId = itemDefId;
     }
     
     @Override
@@ -36,11 +36,11 @@ public class UserConsumableItemId implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         UserConsumableItemId that = (UserConsumableItemId) o;
         return Objects.equals(userId, that.userId) &&
-               Objects.equals(itemId, that.itemId);
+               Objects.equals(itemDefId, that.itemDefId);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(userId, itemId);
+        return Objects.hash(userId, itemDefId);
     }
 } 

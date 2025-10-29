@@ -67,29 +67,31 @@ public class NftService {
                 return NftMintClientResponse.failure("사용자의 지갑 주소가 설정되지 않았습니다");
             }
             
-            // 2. 아이템 정의 조회
-            ItemDefinition itemDefinition = itemDefinitionRepository.findById(request.getItemId())
-                .orElseThrow(() -> new RuntimeException("아이템 정의를 찾을 수 없습니다: " + request.getItemId()));
+            // 2. UserEquipItem 조회 (단일 PK 사용)
+            UserEquipItem userEquipItem = userEquipItemRepository.findById(request.getEquipItemId())
+                .orElseThrow(() -> new RuntimeException("사용자 장비 아이템을 찾을 수 없습니다: " + request.getEquipItemId()));
+            
+            // 3. 소유권 검증
+            if (!userEquipItem.getUserId().equals(request.getUserId())) {
+                return NftMintClientResponse.failure("해당 아이템에 대한 권한이 없습니다");
+            }
 
-            // 3. UserEquipItem에서 사용자 id 아이템 id 로컬 id로 알맞는 장비 찾기
-            UserEquipItem userEquipItem = userEquipItemRepository.findByUserIdAndItemIdAndLocalItemId(
-                request.getUserId(), 
-                request.getItemId(), 
-                request.getLocalItemId()
-            ).orElseThrow(() -> new RuntimeException("사용자 장비 아이템을 찾을 수 없습니다"));
+            // 4. 아이템 정의 조회
+            ItemDefinition itemDefinition = itemDefinitionRepository.findById(userEquipItem.getItemDefId())
+                .orElseThrow(() -> new RuntimeException("아이템 정의를 찾을 수 없습니다: " + userEquipItem.getItemDefId()));
 
-            // 4. 아이템이 이미 NFT화되었는지 확인
+            // 5. 아이템이 이미 NFT화되었는지 확인
             if (userEquipItem.getNftId() != null) {
                 return NftMintClientResponse.failure("이미 NFT화된 아이템입니다");
             }
             
-            // 5. 아이템 데이터 구성
+            // 6. 아이템 데이터 구성
             Map<String, Object> itemData = createItemData(itemDefinition, userEquipItem);
             
-            // 6. 블록체인 서버로 요청 전송
+            // 7. 블록체인 서버로 요청 전송
             ContractNftRequest contractRequest = new ContractNftRequest(
                 user.getWalletAddress(),
-                request.getItemId(),
+                userEquipItem.getItemDefId(),
                 userEquipItem.getId(),
                 itemData
             );
@@ -351,7 +353,7 @@ public class NftService {
             if (userEquipItemOpt.isPresent()) {
                 UserEquipItem userEquipItem = userEquipItemOpt.get();
                 ItemData itemData = new ItemData(
-                    userEquipItem.getItemId(),
+                    userEquipItem.getItemDefId(),
                     userEquipItem.getEnhancementData()
                 );
                 itemDataList.add(itemData);
@@ -369,8 +371,8 @@ public class NftService {
         List<Map<String, Object>> metadataList = new ArrayList<>();
         
         for (UserEquipItem userEquipItem : nftItems) {
-            ItemDefinition itemDefinition = itemDefinitionRepository.findById(userEquipItem.getItemId())
-                .orElseThrow(() -> new RuntimeException("ItemDefinition not found: " + userEquipItem.getItemId()));
+            ItemDefinition itemDefinition = itemDefinitionRepository.findById(userEquipItem.getItemDefId())
+                .orElseThrow(() -> new RuntimeException("ItemDefinition not found: " + userEquipItem.getItemDefId()));
             
             Map<String, Object> metadata = createItemData(itemDefinition, userEquipItem);
             metadataList.add(metadata);

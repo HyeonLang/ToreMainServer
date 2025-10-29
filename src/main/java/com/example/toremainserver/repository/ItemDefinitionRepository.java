@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ItemDefinitionRepository extends JpaRepository<ItemDefinition, Integer> {
+public interface ItemDefinitionRepository extends JpaRepository<ItemDefinition, Long> {
     
     // 아이템 타입별 조회
     List<ItemDefinition> findByType(ItemDefinition.ItemType type);

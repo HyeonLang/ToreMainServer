@@ -11,8 +11,8 @@ public class Npc {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "npc_id")
-    private Long npcId;
+    @Column(name = "npc_id")  // DB 컬럼명은 명확하게
+    private Long id;           // Java 필드명은 간결하게
     
     @Column(name = "name", nullable = false)
     private String name;
@@ -30,19 +30,19 @@ public class Npc {
         this.npcInfo = npcInfo;
     }
     
-    public Npc(Long npcId, String name, Map<String, Object> npcInfo) {
-        this.npcId = npcId;
+    public Npc(Long id, String name, Map<String, Object> npcInfo) {
+        this.id = id;
         this.name = name;
         this.npcInfo = npcInfo;
     }
     
     // Getter와 Setter
-    public Long getNpcId() {
-        return npcId;
+    public Long getId() {
+        return id;
     }
     
-    public void setNpcId(Long npcId) {
-        this.npcId = npcId;
+    public void setId(Long id) {
+        this.id = id;
     }
     
     public String getName() {

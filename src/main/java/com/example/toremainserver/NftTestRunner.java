@@ -93,8 +93,7 @@ public class NftTestRunner implements CommandLineRunner {
                 // NFT 민팅 요청 생성
                 NftMintClientRequest mintRequest = new NftMintClientRequest(
                     user.getId(),
-                    item.getItemId(),
-                    item.getId()
+                    item.getId()  // equipItemId (단일 PK)
                 );
                 
                 // NFT 민팅 실행

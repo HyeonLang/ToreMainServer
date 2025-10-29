@@ -60,11 +60,11 @@ public class ToreMainServerApplication {
                 
                 Npc testNpc = new Npc("상인", npcInfo);
                 Npc savedNpc = npcRepository.save(testNpc);
-                System.out.println("NPC 생성 성공 - ID: " + savedNpc.getNpcId() + ", 이름: " + savedNpc.getName());
+                System.out.println("NPC 생성 성공 - ID: " + savedNpc.getId() + ", 이름: " + savedNpc.getName());
                 System.out.println("NPC 정보: " + savedNpc.getNpcInfo());
                 
                 // NPC 조회 테스트
-                Optional<Npc> foundNpc = npcRepository.findById(savedNpc.getNpcId());
+                Optional<Npc> foundNpc = npcRepository.findById(savedNpc.getId());
                 if (foundNpc.isPresent()) {
                     System.out.println("NPC 조회 성공: " + foundNpc.get().getName());
                 }
@@ -106,17 +106,16 @@ public class ToreMainServerApplication {
             // 4. UserConsumableItem 테스트
             System.out.println("\n--- UserConsumableItem 테스트 ---");
             try {
-                // 소비 아이템 생성 테스트
-                UserConsumableItem testConsumable = new UserConsumableItem(1L, 101, 5, 1001L);
+                // 소비 아이템 생성 테스트 (복합키: userId + itemDefId)
+                UserConsumableItem testConsumable = new UserConsumableItem(1L, 101L, 5);
                 UserConsumableItem savedConsumable = userConsumableItemRepository.save(testConsumable);
                 System.out.println("소비 아이템 생성 성공 - UserID: " + savedConsumable.getUserId() + 
-                                 ", ItemID: " + savedConsumable.getItemId() + 
-                                 ", 수량: " + savedConsumable.getQuantity() +
-                                 ", LocalItemID: " + savedConsumable.getLocalItemId());
+                                 ", ItemDefID: " + savedConsumable.getItemDefId() + 
+                                 ", 수량: " + savedConsumable.getQuantity());
                 
                 // 소비 아이템 조회 테스트
                 Optional<UserConsumableItem> foundConsumable = userConsumableItemRepository
-                    .findByUserIdAndItemId(1L, 101);
+                    .findByUserIdAndItemDefId(1L, 101L);
                 if (foundConsumable.isPresent()) {
                     System.out.println("소비 아이템 조회 성공: " + foundConsumable.get().getQuantity() + "개");
                 }
@@ -134,16 +133,16 @@ public class ToreMainServerApplication {
                 enhancementData.put("additional_attack", 10);
                 enhancementData.put("additional_defense", 5);
                 
-                UserEquipItem testEquip = new UserEquipItem(1L, 201, enhancementData, "0001", 2001L);
+                // 단일 PK(id) 자동 생성
+                UserEquipItem testEquip = new UserEquipItem(1L, 201L, enhancementData, "0001");
                 UserEquipItem savedEquip = userEquipItemRepository.save(testEquip);
                 System.out.println("장비 아이템 생성 성공 - ID: " + savedEquip.getId() + 
                                  ", UserID: " + savedEquip.getUserId() + 
-                                 ", ItemID: " + savedEquip.getItemId() +
-                                 ", LocalItemID: " + savedEquip.getLocalItemId());
+                                 ", ItemDefID: " + savedEquip.getItemDefId());
                 System.out.println("강화 데이터: " + savedEquip.getEnhancementData());
                 System.out.println("NFT ID: " + savedEquip.getNftId());
                 
-                // 장비 아이템 조회 테스트
+                // 장비 아이템 조회 테스트 (단일 PK로 조회)
                 Optional<UserEquipItem> foundEquip = userEquipItemRepository.findById(savedEquip.getId());
                 if (foundEquip.isPresent()) {
                     System.out.println("장비 아이템 조회 성공: " + foundEquip.get().getNftId());

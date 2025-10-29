@@ -1,22 +1,17 @@
 package com.example.toremainserver.dto.item;
 
-import java.util.Map;
-
 public class ConsumableItemRequest {
     private Long userId;
-    private Integer itemId;
-    private Long localItemId;
+    private Long itemDefId;  // ItemDefinition.id 참조
     private Integer quantity;
-
 
     // 기본 생성자
     public ConsumableItemRequest() {}
 
     // 생성자
-    public ConsumableItemRequest(Long userId, Integer itemId, Long localItemId, Integer quantity) {
+    public ConsumableItemRequest(Long userId, Long itemDefId, Integer quantity) {
         this.userId = userId;
-        this.itemId = itemId;
-        this.localItemId = localItemId;
+        this.itemDefId = itemDefId;
         this.quantity = quantity;
     }
     
@@ -29,22 +24,14 @@ public class ConsumableItemRequest {
         this.userId = userId;
     }
     
-    public Integer getItemId() {
-        return itemId;
+    public Long getItemDefId() {
+        return itemDefId;
     }
     
-    public void setItemId(Integer itemId) {
-        this.itemId = itemId;
+    public void setItemDefId(Long itemDefId) {
+        this.itemDefId = itemDefId;
     }
     
-    public Long getLocalItemId() {
-        return localItemId;
-    }
-    
-    public void setLocalItemId(Long localItemId) {
-        this.localItemId = localItemId;
-    }
-
     public Integer getQuantity() {
         return quantity;
     }

@@ -1,6 +1,5 @@
 package com.example.toremainserver.service;
 
-import com.example.toremainserver.dto.item.ItemRequest;
 import com.example.toremainserver.entity.ItemDefinition;
 import com.example.toremainserver.entity.UserConsumableItem;
 import com.example.toremainserver.entity.UserEquipItem;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
-import java.util.HashMap;
 
 @Service
 public class ItemService {
@@ -36,21 +34,6 @@ public class ItemService {
         this.userRepository = userRepository;
     }
     
-    // 아이템 정의 추가
-    public ItemDefinition createItemDefinition(ItemRequest itemRequest) {
-        Map<String, Object> baseStats = new HashMap<>();
-        baseStats.put("price", itemRequest.getPrice());
-        
-        ItemDefinition itemDefinition = new ItemDefinition(
-            itemRequest.getName(), 
-            ItemDefinition.ItemType.ETC, 
-            baseStats, 
-            itemRequest.getDescription()
-        );
-        
-        return itemDefinitionRepository.save(itemDefinition);
-    }
-    
     // 사용자별 소비 아이템 조회
     public List<UserConsumableItem> getConsumableItemsByUserId(Long userId) {
         return userConsumableItemRepository.findByUserId(userId);
@@ -62,7 +45,7 @@ public class ItemService {
     }
     
     // 아이템 정의 조회
-    public ItemDefinition getItemDefinition(Integer id) {
+    public ItemDefinition getItemDefinition(Long id) {
         Optional<ItemDefinition> itemOptional = itemDefinitionRepository.findById(id);
         return itemOptional.orElse(null);
     }
@@ -72,51 +55,20 @@ public class ItemService {
         return itemDefinitionRepository.findAll();
     }
     
-    // 아이템 정의 수정
-    public ItemDefinition updateItemDefinition(Integer id, ItemRequest itemRequest) {
-        Optional<ItemDefinition> itemOptional = itemDefinitionRepository.findById(id);
-        if (itemOptional.isPresent()) {
-            ItemDefinition existingItem = itemOptional.get();
-            existingItem.setName(itemRequest.getName());
-            existingItem.setDescription(itemRequest.getDescription());
-            
-            Map<String, Object> baseStats = new HashMap<>();
-            baseStats.put("price", itemRequest.getPrice());
-            existingItem.setBaseStats(baseStats);
-            
-            return itemDefinitionRepository.save(existingItem);
-        }
-        return null;
-    }
-    
-    // 아이템 정의 삭제
-    public boolean deleteItemDefinition(Integer id) {
-        if (itemDefinitionRepository.existsById(id)) {
-            itemDefinitionRepository.deleteById(id);
-            return true;
-        }
-        return false;
-    }
-    
     // 사용자에게 소비 아이템 추가
-    public UserConsumableItem addConsumableItemToUser(Long userId, Integer itemId, Integer quantity, Long localItemId) {
+    public UserConsumableItem addConsumableItemToUser(Long userId, Long itemDefId, Integer quantity) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
         }
         
-        Optional<ItemDefinition> itemOptional = itemDefinitionRepository.findById(itemId);
+        Optional<ItemDefinition> itemOptional = itemDefinitionRepository.findById(itemDefId);
         if (itemOptional.isEmpty()) {
             throw new RuntimeException("아이템 정의를 찾을 수 없습니다.");
         }
         
-        // localItemId가 null이면 자동 생성, 아니면 사용자가 제공한 값 사용
-        if (localItemId == null) {
-            localItemId = userId * 1000L + itemId;
-        }
-        
-        // userId와 localItemId로 기존 아이템 조회
-        Optional<UserConsumableItem> existingItemOptional = userConsumableItemRepository.findByUserIdAndLocalItemId(userId, localItemId);
+        // userId와 itemDefId로 기존 아이템 조회 (복합키)
+        Optional<UserConsumableItem> existingItemOptional = userConsumableItemRepository.findByUserIdAndItemDefId(userId, itemDefId);
         
         if (existingItemOptional.isPresent()) {
             // 기존 아이템이 있으면 수량만 증가
@@ -125,41 +77,37 @@ public class ItemService {
             return userConsumableItemRepository.save(existingItem);
         } else {
             // 없으면 새로 추가
-            UserConsumableItem userItem = new UserConsumableItem(userId, itemId, quantity, localItemId);
+            UserConsumableItem userItem = new UserConsumableItem(userId, itemDefId, quantity);
             return userConsumableItemRepository.save(userItem);
         }
     }
     
     // 사용자에게 장비 아이템 추가
-    public UserEquipItem addEquipItemToUser(Long userId, Integer itemId, Long localItemId, Map<String, Object> enhancementData) {
+    public UserEquipItem addEquipItemToUser(Long userId, Long itemDefId, Map<String, Object> enhancementData) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
         }
         
-        Optional<ItemDefinition> itemOptional = itemDefinitionRepository.findById(itemId);
+        Optional<ItemDefinition> itemOptional = itemDefinitionRepository.findById(itemDefId);
         if (itemOptional.isEmpty()) {
             throw new RuntimeException("아이템 정의를 찾을 수 없습니다.");
         }
         
-        // localItemId가 null이면 자동 생성, 아니면 사용자가 제공한 값 사용
-        if (localItemId == null) {
-            localItemId = userId * 2000L + itemId;
-        }
-        
-        UserEquipItem userItem = new UserEquipItem(userId, itemId, enhancementData, null, localItemId);
+        // 단일 PK(id) 자동 생성
+        UserEquipItem userItem = new UserEquipItem(userId, itemDefId, enhancementData, null);
         return userEquipItemRepository.save(userItem);
     }
     
     // 사용자 소비 아이템 제거 (수량 감소 또는 삭제)
-    public void removeConsumableItemFromUser(Long userId, Long localItemId, Integer quantity) {
+    public void removeConsumableItemFromUser(Long userId, Long itemDefId, Integer quantity) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
         }
         
-        // userId와 localItemId로 아이템 조회
-        Optional<UserConsumableItem> userItemOptional = userConsumableItemRepository.findByUserIdAndLocalItemId(userId, localItemId);
+        // userId와 itemDefId로 아이템 조회 (복합키)
+        Optional<UserConsumableItem> userItemOptional = userConsumableItemRepository.findByUserIdAndItemDefId(userId, itemDefId);
         if (userItemOptional.isEmpty()) {
             throw new RuntimeException("사용자가 해당 소비 아이템을 보유하고 있지 않습니다.");
         }
@@ -185,16 +133,11 @@ public class ItemService {
     }
     
     // 사용자 장비 아이템 제거
-    public void removeEquipItemFromUser(Long userId, Long localItemId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
-        }
-        
-        // userId와 localItemId로 장비 아이템 조회
-        Optional<UserEquipItem> userItemOptional = userEquipItemRepository.findByUserIdAndLocalItemId(userId, localItemId);
+    public void removeEquipItemFromUser(Long equipItemId) {
+        // 단일 PK(id)로 직접 조회
+        Optional<UserEquipItem> userItemOptional = userEquipItemRepository.findById(equipItemId);
         if (userItemOptional.isEmpty()) {
-            throw new RuntimeException("사용자가 해당 장비 아이템을 보유하고 있지 않습니다.");
+            throw new RuntimeException("해당 장비 아이템을 찾을 수 없습니다.");
         }
         
         UserEquipItem userItem = userItemOptional.get();

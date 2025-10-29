@@ -4,12 +4,24 @@ import com.example.toremainserver.dto.game.NpcChatRequest;
 import com.example.toremainserver.dto.game.NpcChatResponse;
 import com.example.toremainserver.dto.game.Ue5NpcRequest;
 import com.example.toremainserver.dto.game.Ue5NpcResponse;
+import com.example.toremainserver.dto.game.ProfileCreateRequest;
+import com.example.toremainserver.dto.game.UserGameProfileResponse;
+import com.example.toremainserver.dto.game.UserGameProfileSyncRequest;
+import com.example.toremainserver.dto.game.UserGameProfileUpdateRequest;
+import com.example.toremainserver.dto.game.GoldUpdateRequest;
+import com.example.toremainserver.dto.game.GoldUpdateResponse;
+import com.example.toremainserver.dto.game.ExperienceUpdateRequest;
+import com.example.toremainserver.dto.game.ExperienceUpdateResponse;
+import com.example.toremainserver.dto.game.EquipmentSlotRequest;
+import com.example.toremainserver.dto.game.EquipmentUpdateResponse;
 import com.example.toremainserver.entity.Conversation;
 import com.example.toremainserver.entity.Npc;
 import com.example.toremainserver.entity.User;
+import com.example.toremainserver.entity.UserGameProfile;
 import com.example.toremainserver.repository.ConversationRepository;
 import com.example.toremainserver.repository.NpcRepository;
 import com.example.toremainserver.repository.UserRepository;
+import com.example.toremainserver.repository.UserGameProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -34,16 +47,59 @@ public class GameEventService {
     private final NpcRepository npcRepository;
     private final UserRepository userRepository;
     private final ConversationRepository conversationRepository;
+    private final UserGameProfileRepository userGameProfileRepository;
+    
+    // ========================================
+    // 권한 검증 헬퍼 메서드 (인증 시스템 연동 대비)
+    // ========================================
+    
+    /**
+     * 현재 로그인한 유저가 특정 userId로 작업을 수행할 권한이 있는지 검증합니다.
+     * 인증 시스템이 추가되면 주석을 해제하여 사용합니다.
+     * @param userId 검증할 userId
+     */
+    private void validateUserAuthorization(Long userId) {
+        // TODO: 인증 시스템 추가 시 아래 주석 해제
+        /*
+        Long currentUserId = SecurityContext.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new UnauthorizedException("Authentication required");
+        }
+        if (!currentUserId.equals(userId)) {
+            throw new UnauthorizedException("Cannot perform action for another user");
+        }
+        */
+    }
+    
+    /**
+     * 현재 로그인한 유저가 특정 프로필의 소유자인지 검증합니다.
+     * 인증 시스템이 추가되면 주석을 해제하여 사용합니다.
+     * @param profile 검증할 프로필
+     */
+    private void validateProfileOwnership(UserGameProfile profile) {
+        // TODO: 인증 시스템 추가 시 아래 주석 해제
+        /*
+        Long currentUserId = SecurityContext.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new UnauthorizedException("Authentication required");
+        }
+        if (!profile.getUserId().equals(currentUserId)) {
+            throw new UnauthorizedException("This profile doesn't belong to you");
+        }
+        */
+    }
 
     @Autowired
     public GameEventService(RestTemplate restTemplate, @Value("${ai.server.url}") String aiServerUrl, 
                            NpcRepository npcRepository, UserRepository userRepository, 
-                           ConversationRepository conversationRepository) {
+                           ConversationRepository conversationRepository,
+                           UserGameProfileRepository userGameProfileRepository) {
         this.restTemplate = restTemplate;
         this.aiServerUrl = aiServerUrl;
         this.npcRepository = npcRepository;
         this.userRepository = userRepository;
         this.conversationRepository = conversationRepository;
+        this.userGameProfileRepository = userGameProfileRepository;
     }
 
     /**
@@ -55,7 +111,7 @@ public class GameEventService {
      */
     public ResponseEntity<Ue5NpcResponse> forwardNpcRequest(Ue5NpcRequest ue5Request) {
         // DB에서 NPC 정보 조회
-        Optional<Npc> npcOptional = npcRepository.findByNpcId(ue5Request.getNpcId());
+        Optional<Npc> npcOptional = npcRepository.findById(ue5Request.getNpcId());
         
         if (npcOptional.isEmpty()) {
             // NPC가 존재하지 않는 경우 에러 응답
@@ -260,7 +316,7 @@ public class GameEventService {
         }
         
         // NPC 존재 여부 확인
-        if (!npcRepository.existsByNpcId(npcId)) {
+        if (!npcRepository.existsById(npcId)) {
             return null; // NPC가 없으면 404
         }
         
@@ -458,6 +514,328 @@ public class GameEventService {
             return defaultValue;
         }
         return value.toString();
+    }
+    
+    /**
+     * profileId로 UserGameProfile을 조회합니다.
+     * @param profileId 프로필 ID
+     * @return UserGameProfileResponse (프로필이 없으면 null)
+     */
+    public UserGameProfileResponse getUserGameProfile(Long profileId) {
+        Optional<UserGameProfile> profileOptional = userGameProfileRepository.findById(profileId);
+        
+        if (profileOptional.isEmpty()) {
+            return null;
+        }
+        
+        UserGameProfile profile = profileOptional.get();
+        
+        // 소유권 검증
+        validateProfileOwnership(profile);
+        
+        return new UserGameProfileResponse(
+            profile.getId(),        // Entity는 id
+            profile.getUserId(),
+            profile.getProfileName(),
+            profile.getLevel(),
+            profile.getExperience(),
+            profile.getGold(),
+            profile.getEquippedItems(),
+            profile.getSkillInfo(),
+            profile.getCreatedAt(),
+            profile.getUpdatedAt()
+        );
+    }
+    
+    /**
+     * userId로 해당 유저의 모든 프로필 목록 조회 (간단 정보만)
+     * profileId와 profileName만 반환하여 네트워크 효율 최적화
+     */
+    public List<Map<String, Object>> getUserGameProfiles(Long userId) {
+        // 사용자 권한 검증
+        validateUserAuthorization(userId);
+        
+        List<UserGameProfile> profiles = userGameProfileRepository.findByUserId(userId);
+        
+        return profiles.stream()
+            .map(profile -> {
+                Map<String, Object> summary = new java.util.HashMap<>();
+                summary.put("profileId", profile.getId());
+                summary.put("profileName", profile.getProfileName());
+                return summary;
+            })
+            .collect(java.util.stream.Collectors.toList());
+    }
+    
+    /**
+     * 새 UserGameProfile을 생성합니다. (최초 1회 생성용)
+     * @param request userId와 profileName
+     * @return 생성된 UserGameProfileResponse
+     */
+    @Transactional
+    public UserGameProfileResponse createUserGameProfile(ProfileCreateRequest request) {
+        if (request.getUserId() == null || request.getProfileName() == null) {
+            throw new IllegalArgumentException("userId and profileName are required");
+        }
+        
+        // 권한 검증 (다른 유저의 프로필 생성 방지)
+        validateUserAuthorization(request.getUserId());
+        
+        // 동일한 이름의 프로필이 이미 있는지 확인
+        Optional<UserGameProfile> existing = userGameProfileRepository
+            .findByUserIdAndProfileName(request.getUserId(), request.getProfileName());
+        
+        if (existing.isPresent()) {
+            throw new IllegalArgumentException("Profile with name '" + request.getProfileName() + "' already exists for this user");
+        }
+        
+        // 신규 프로필 생성 (기본값으로 초기화)
+        UserGameProfile profile = new UserGameProfile(request.getUserId(), request.getProfileName());
+        // level, experience, gold 등은 Entity에서 기본값으로 초기화됨
+        
+        UserGameProfile savedProfile = userGameProfileRepository.save(profile);
+        
+        return new UserGameProfileResponse(
+            savedProfile.getId(),    // Entity는 id
+            savedProfile.getUserId(),
+            savedProfile.getProfileName(),
+            savedProfile.getLevel(),
+            savedProfile.getExperience(),
+            savedProfile.getGold(),
+            savedProfile.getEquippedItems(),
+            savedProfile.getSkillInfo(),
+            savedProfile.getCreatedAt(),
+            savedProfile.getUpdatedAt()
+        );
+    }
+    
+    /**
+     * 전체 UserGameProfile 정보를 동기화합니다.
+     * profileId가 있으면 기존 프로필을 업데이트하고, 없으면 새로 생성합니다.
+     * @param request 동기화할 전체 정보 (profileId, userId, profileName 등)
+     * @return 저장된 UserGameProfileResponse
+     */
+    @Transactional
+    public UserGameProfileResponse syncUserGameProfile(UserGameProfileSyncRequest request) {
+        UserGameProfile profile;
+        
+        if (request.getProfileId() != null) {
+            // 기존 프로필 업데이트
+            profile = userGameProfileRepository.findById(request.getProfileId())
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found: " + request.getProfileId()));
+            
+            // 소유권 검증
+            validateProfileOwnership(profile);
+        } else {
+            // 신규 프로필 생성
+            if (request.getUserId() == null || request.getProfileName() == null) {
+                throw new IllegalArgumentException("userId and profileName are required for new profile");
+            }
+            
+            // 권한 검증 (다른 유저의 프로필 생성 방지)
+            validateUserAuthorization(request.getUserId());
+            
+            profile = new UserGameProfile(request.getUserId(), request.getProfileName());
+        }
+        
+        // 모든 필드 업데이트
+        if (request.getLevel() != null) profile.setLevel(request.getLevel());
+        if (request.getExperience() != null) profile.setExperience(request.getExperience());
+        if (request.getGold() != null) profile.setGold(request.getGold());
+        if (request.getEquippedItems() != null) profile.setEquippedItems(request.getEquippedItems());
+        if (request.getSkillInfo() != null) profile.setSkillInfo(request.getSkillInfo());
+        profile.setUpdatedAt(LocalDateTime.now());
+        
+        UserGameProfile savedProfile = userGameProfileRepository.save(profile);
+        
+        return new UserGameProfileResponse(
+            savedProfile.getId(),    // Entity는 id
+            savedProfile.getUserId(),
+            savedProfile.getProfileName(),
+            savedProfile.getLevel(),
+            savedProfile.getExperience(),
+            savedProfile.getGold(),
+            savedProfile.getEquippedItems(),
+            savedProfile.getSkillInfo(),
+            savedProfile.getCreatedAt(),
+            savedProfile.getUpdatedAt()
+        );
+    }
+    
+    /**
+     * UserGameProfile의 개별 속성을 업데이트합니다.
+     * null이 아닌 필드만 업데이트합니다.
+     * @param request 업데이트할 정보 (profileId와 null이 아닌 필드만 업데이트)
+     * @return 업데이트된 UserGameProfileResponse (프로필이 없으면 null)
+     */
+    @Transactional
+    public UserGameProfileResponse updateUserGameProfile(UserGameProfileUpdateRequest request) {
+        Optional<UserGameProfile> profileOptional = userGameProfileRepository.findById(request.getProfileId());
+        
+        if (profileOptional.isEmpty()) {
+            return null;
+        }
+        
+        UserGameProfile profile = profileOptional.get();
+        
+        // 소유권 검증
+        validateProfileOwnership(profile);
+        
+        // null이 아닌 필드만 업데이트
+        if (request.getLevel() != null) {
+            profile.setLevel(request.getLevel());
+        }
+        if (request.getExperience() != null) {
+            profile.setExperience(request.getExperience());
+        }
+        if (request.getGold() != null) {
+            profile.setGold(request.getGold());
+        }
+        if (request.getEquippedItems() != null) {
+            profile.setEquippedItems(request.getEquippedItems());
+        }
+        if (request.getSkillInfo() != null) {
+            profile.setSkillInfo(request.getSkillInfo());
+        }
+        
+        profile.setUpdatedAt(LocalDateTime.now());
+        UserGameProfile savedProfile = userGameProfileRepository.save(profile);
+        
+        return new UserGameProfileResponse(
+            savedProfile.getId(),    // Entity는 id
+            savedProfile.getUserId(),
+            savedProfile.getProfileName(),
+            savedProfile.getLevel(),
+            savedProfile.getExperience(),
+            savedProfile.getGold(),
+            savedProfile.getEquippedItems(),
+            savedProfile.getSkillInfo(),
+            savedProfile.getCreatedAt(),
+            savedProfile.getUpdatedAt()
+        );
+    }
+    
+    /**
+     * Gold를 증감합니다. (최적화된 단일 필드 업데이트)
+     * 음수 amount로 차감도 가능합니다.
+     * 낙관적 락으로 동시성 문제 해결
+     * @param request profileId와 증감량
+     * @return 간소화된 Gold 업데이트 응답 (프로필이 없으면 null)
+     */
+    @Transactional
+    public GoldUpdateResponse updateGold(GoldUpdateRequest request) {
+        UserGameProfile profile = userGameProfileRepository
+            .findById(request.getProfileId())
+            .orElse(null);
+        
+        if (profile == null) {
+            return null;
+        }
+        
+        // 소유권 검증
+        validateProfileOwnership(profile);
+        
+        // Gold 증감 (음수면 차감)
+        int newGold = profile.getGold() + request.getAmount();
+        
+        // Gold가 음수가 되지 않도록 검증
+        if (newGold < 0) {
+            throw new IllegalArgumentException("Gold cannot be negative. Current: " + profile.getGold() + ", Amount: " + request.getAmount());
+        }
+        
+        profile.setGold(newGold);
+        profile.setUpdatedAt(LocalDateTime.now());
+        
+        UserGameProfile savedProfile = userGameProfileRepository.save(profile);
+        
+        // 간소화된 응답 (변경된 정보만)
+        return new GoldUpdateResponse(
+            savedProfile.getId(),    // Entity는 id
+            savedProfile.getGold(),
+            request.getAmount(),
+            savedProfile.getUpdatedAt()
+        );
+    }
+    
+    /**
+     * Experience를 증가시킵니다. (레벨업 로직 제외)
+     * 낙관적 락으로 동시성 문제 해결
+     * @param request profileId와 획득 경험치
+     * @return ExperienceUpdateResponse (레벨과 경험치 정보)
+     */
+    @Transactional
+    public ExperienceUpdateResponse addExperience(ExperienceUpdateRequest request) {
+        UserGameProfile profile = userGameProfileRepository
+            .findById(request.getProfileId())
+            .orElse(null);
+        
+        if (profile == null) {
+            return null;
+        }
+        
+        // 소유권 검증
+        validateProfileOwnership(profile);
+        
+        // 경험치 증가만 처리 (레벨업은 별도 처리)
+        long newExperience = profile.getExperience() + request.getAmount();
+        
+        profile.setExperience(newExperience);
+        profile.setUpdatedAt(LocalDateTime.now());
+        
+        UserGameProfile savedProfile = userGameProfileRepository.save(profile);
+        
+        // 간소화된 응답 (변경된 정보만)
+        return new ExperienceUpdateResponse(
+            savedProfile.getId(),    // Entity는 id
+            savedProfile.getLevel(),
+            savedProfile.getExperience(),
+            request.getAmount(),
+            savedProfile.getUpdatedAt()
+        );
+    }
+    
+    /**
+     * 장비 슬롯에 아이템을 장착하거나 해제합니다. (최적화된 단일 슬롯 업데이트)
+     * 낙관적 락으로 동시성 문제 해결
+     * @param request profileId, 슬롯명, 아이템ID (null이면 해제)
+     * @return 간소화된 장비 업데이트 응답 (프로필이 없으면 null)
+     */
+    @Transactional
+    public EquipmentUpdateResponse updateEquipmentSlot(EquipmentSlotRequest request) {
+        UserGameProfile profile = userGameProfileRepository
+            .findById(request.getProfileId())
+            .orElse(null);
+        
+        if (profile == null) {
+            return null;
+        }
+        
+        // 소유권 검증
+        validateProfileOwnership(profile);
+        
+        // 이전 아이템 ID 저장
+        Long previousItemId = profile.getEquippedItem(request.getSlot());
+        
+        // 슬롯 장착/해제
+        if (request.getItemId() == null) {
+            // 해제
+            profile.unequipItem(request.getSlot());
+        } else {
+            // 장착
+            profile.equipItem(request.getSlot(), request.getItemId());
+        }
+        
+        profile.setUpdatedAt(LocalDateTime.now());
+        UserGameProfile savedProfile = userGameProfileRepository.save(profile);
+        
+        // 간소화된 응답 (변경된 슬롯 정보만)
+        return new EquipmentUpdateResponse(
+            savedProfile.getId(),    // Entity는 id
+            request.getSlot(),
+            request.getItemId(),
+            previousItemId,
+            savedProfile.getUpdatedAt()
+        );
     }
     
 } 

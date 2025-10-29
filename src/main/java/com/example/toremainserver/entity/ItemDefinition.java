@@ -11,7 +11,8 @@ public class ItemDefinition {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @Column(name = "item_id")
+    private Long id;  // itemId PK
     
     @Column(name = "name", nullable = false, length = 100)
     private String name;
@@ -83,11 +84,11 @@ public class ItemDefinition {
     }
     
     // Getter와 Setter
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
     
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
     
