@@ -127,13 +127,16 @@ public class GameEventController {
      *
      * @param userId 유저 ID
      * @param npcId NPC ID
+     * @param profileId 프로필 ID
      * @return Conversation (없으면 404)
      */
     @GetMapping("/npc/conversations")
     public ResponseEntity<Conversation> getNpcConversations(
             @RequestParam Long userId,
-            @RequestParam Long npcId) {
-        Conversation conversation = gameEventService.getNpcConversations(userId, npcId);
+            @RequestParam Long profileId,
+            @RequestParam Long npcId
+    ) {
+        Conversation conversation = gameEventService.getNpcConversations(userId, profileId, npcId);
         
         if (conversation == null) {
             return ResponseEntity.notFound().build();

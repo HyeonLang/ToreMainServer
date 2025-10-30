@@ -48,6 +48,7 @@ public class Ue5NpcRequest {
     // UE5에서 받는 필드들
     private Long npcId;
     private Long userId;
+    private Long profileId; // 프로필 ID 추가
     private ChatHistory currentPlayerMessage;
     private List<ChatHistory> previousChatHistory;
     private Map<String, Object> playerDescription; // 플레이어 설명 (JSON)
@@ -60,22 +61,24 @@ public class Ue5NpcRequest {
     public Ue5NpcRequest() {}
     
     // 생성자
-    public Ue5NpcRequest(Long npcId, Long userId,
+    public Ue5NpcRequest(Long npcId, Long userId, Long profileId,
                          ChatHistory currentPlayerMessage, List<ChatHistory> previousChatHistory,
                          Map<String, Object> playerDescription) {
         this.npcId = npcId;
         this.userId = userId;
+        this.profileId = profileId;
         this.currentPlayerMessage = currentPlayerMessage;
         this.previousChatHistory = previousChatHistory;
         this.playerDescription = playerDescription;
     }
     
     // 생성자 (previousConversationSummary 포함)
-    public Ue5NpcRequest(Long npcId, Long userId,
+    public Ue5NpcRequest(Long npcId, Long userId, Long profileId,
                          ChatHistory currentPlayerMessage, List<ChatHistory> previousChatHistory,
                          Map<String, Object> playerDescription, String previousConversationSummary) {
         this.npcId = npcId;
         this.userId = userId;
+        this.profileId = profileId;
         this.currentPlayerMessage = currentPlayerMessage;
         this.previousChatHistory = previousChatHistory;
         this.playerDescription = playerDescription;
@@ -83,11 +86,12 @@ public class Ue5NpcRequest {
     }
     
     // 생성자 (apiKey 포함)
-    public Ue5NpcRequest(Long npcId, Long userId,
+    public Ue5NpcRequest(Long npcId, Long userId, Long profileId,
                          ChatHistory currentPlayerMessage, List<ChatHistory> previousChatHistory,
                          Map<String, Object> playerDescription, String previousConversationSummary, String apiKey) {
         this.npcId = npcId;
         this.userId = userId;
+        this.profileId = profileId;
         this.currentPlayerMessage = currentPlayerMessage;
         this.previousChatHistory = previousChatHistory;
         this.playerDescription = playerDescription;
@@ -110,6 +114,14 @@ public class Ue5NpcRequest {
     
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+    
+    public Long getProfileId() {
+        return profileId;
+    }
+    
+    public void setProfileId(Long profileId) {
+        this.profileId = profileId;
     }
     
     public ChatHistory getCurrentPlayerMessage() {

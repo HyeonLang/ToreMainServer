@@ -56,8 +56,8 @@ public class Conversation {
     @Column(name = "conversation_id")
     private Long conversationId;
     
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "profile_id", nullable = false)
+    private Long profileId;
     
     @Column(name = "npc_id", nullable = false)
     private Long npcId;
@@ -78,14 +78,14 @@ public class Conversation {
     }
     
     // 생성자
-    public Conversation(Long userId, Long npcId) {
-        this.userId = userId;
+    public Conversation(Long profileId, Long npcId) {
+        this.profileId = profileId;
         this.npcId = npcId;
         this.lastUpdated = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     }
     
-    public Conversation(Long userId, Long npcId, List<ChatHistory> recentHistory, String summary) {
-        this.userId = userId;
+    public Conversation(Long profileId, Long npcId, List<ChatHistory> recentHistory, String summary) {
+        this.profileId = profileId;
         this.npcId = npcId;
         this.recentHistory = recentHistory;
         this.summary = summary;
@@ -101,12 +101,12 @@ public class Conversation {
         this.conversationId = conversationId;
     }
     
-    public Long getUserId() {
-        return userId;
+    public Long getProfileId() {
+        return profileId;
     }
     
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setProfileId(Long profileId) {
+        this.profileId = profileId;
     }
     
     public Long getNpcId() {

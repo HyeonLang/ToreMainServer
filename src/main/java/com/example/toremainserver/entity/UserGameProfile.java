@@ -41,10 +41,10 @@ public class UserGameProfile {
     @Column(name = "skill_info", columnDefinition = "JSON")
     private Map<String, Integer> skillInfo = new HashMap<>();
     
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DATETIME")
     private LocalDateTime createdAt;
     
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME")
     private LocalDateTime updatedAt;
     
     // 낙관적 락을 위한 버전 필드 (동시성 제어)
