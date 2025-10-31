@@ -30,17 +30,17 @@ public class ItemController {
         return ResponseEntity.ok(items);
     }
     
-    // 사용자별 소비 아이템 조회
-    @GetMapping("/consumable-items/{userId}")
-    public ResponseEntity<List<UserConsumableItem>> getConsumableItemsByUserId(@PathVariable Long userId) {
-        List<UserConsumableItem> items = itemService.getConsumableItemsByUserId(userId);
+    // 프로필별 소비 아이템 조회
+    @GetMapping("/consumable-items/{profileId}")
+    public ResponseEntity<List<UserConsumableItem>> getConsumableItemsByProfileId(@PathVariable Long profileId) {
+        List<UserConsumableItem> items = itemService.getConsumableItemsByProfileId(profileId);
         return ResponseEntity.ok(items);
     }
     
-    // 사용자별 장비 아이템 조회
-    @GetMapping("/equip-items/{userId}")
-    public ResponseEntity<List<UserEquipItem>> getEquipItemsByUserId(@PathVariable Long userId) {
-        List<UserEquipItem> items = itemService.getEquipItemsByUserId(userId);
+    // 프로필별 장비 아이템 조회
+    @GetMapping("/equip-items/{profileId}")
+    public ResponseEntity<List<UserEquipItem>> getEquipItemsByProfileId(@PathVariable Long profileId) {
+        List<UserEquipItem> items = itemService.getEquipItemsByProfileId(profileId);
         return ResponseEntity.ok(items);
     }
     
@@ -55,12 +55,12 @@ public class ItemController {
         }
     }
     
-    // 사용자에게 소비 아이템 추가
+    // 프로필에 소비 아이템 추가
     @PostMapping({"/consumable-item"})
-    public ResponseEntity<?> addConsumableItemToUser(@RequestBody ConsumableItemRequest request) {
+    public ResponseEntity<?> addConsumableItemToProfile(@RequestBody ConsumableItemRequest request) {
         try {
-            UserConsumableItem userItem = itemService.addConsumableItemToUser(
-                    request.getUserId(),
+            UserConsumableItem userItem = itemService.addConsumableItemToProfile(
+                    request.getProfileId(),
                     request.getItemDefId(),
                     request.getQuantity());
             return ResponseEntity.ok(userItem);
@@ -69,12 +69,12 @@ public class ItemController {
         }
     }
     
-    // 사용자에게 장비 아이템 추가
+    // 프로필에 장비 아이템 추가
     @PostMapping("/equip-item")
-    public ResponseEntity<?> addEquipItemToUser(@RequestBody EquipItemRequest request) {
+    public ResponseEntity<?> addEquipItemToProfile(@RequestBody EquipItemRequest request) {
         try {
-            UserEquipItem userItem = itemService.addEquipItemToUser(
-                request.getUserId(), 
+            UserEquipItem userItem = itemService.addEquipItemToProfile(
+                request.getProfileId(), 
                 request.getItemDefId(), 
                 request.getEnhancementData()
             );
@@ -85,25 +85,28 @@ public class ItemController {
         }
     }
     
-    // 사용자 소비 아이템 제거 (수량 감소 또는 삭제)
+    // 프로필 소비 아이템 제거 (수량 감소 또는 삭제)
     @DeleteMapping({"/consumable-item", "/consumable-items"})
-    public ResponseEntity<?> removeConsumableItemFromUser(
-            @RequestParam Long userId,
+    public ResponseEntity<?> removeConsumableItemFromProfile(
+            @RequestParam Long profileId,
             @RequestParam Long itemDefId,
             @RequestParam Integer quantity) {
         try {
-            itemService.removeConsumableItemFromUser(userId, itemDefId, quantity);
+            itemService.removeConsumableItemFromProfile(profileId, itemDefId, quantity);
             return ResponseEntity.ok(java.util.Map.of("message", "소비 아이템이 성공적으로 제거되었습니다"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
     
-    // 사용자 장비 아이템 제거
+    // 프로필 장비 아이템 제거
     @DeleteMapping({"/equip-item", "/equip-items"})
-    public ResponseEntity<?> removeEquipItemFromUser(@RequestParam Long equipItemId) {
+    public ResponseEntity<?> removeEquipItemFromProfile(
+        @RequestParam Long profileId,
+        @RequestParam Long equipItemId
+        ) {
         try {
-            itemService.removeEquipItemFromUser(equipItemId);
+            itemService.removeEquipItemFromProfile(profileId, equipItemId);
             return ResponseEntity.ok(java.util.Map.of("message", "장비 아이템이 성공적으로 제거되었습니다"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));

@@ -3,7 +3,6 @@ package com.example.toremainserver;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
 import com.example.toremainserver.repository.UserRepository;
 import com.example.toremainserver.repository.NpcRepository;
 import com.example.toremainserver.repository.ItemDefinitionRepository;
@@ -106,16 +105,16 @@ public class ToreMainServerApplication {
             // 4. UserConsumableItem 테스트
             System.out.println("\n--- UserConsumableItem 테스트 ---");
             try {
-                // 소비 아이템 생성 테스트 (복합키: userId + itemDefId)
+                // 소비 아이템 생성 테스트 (복합키: profileId + itemDefId)
                 UserConsumableItem testConsumable = new UserConsumableItem(1L, 101L, 5);
                 UserConsumableItem savedConsumable = userConsumableItemRepository.save(testConsumable);
-                System.out.println("소비 아이템 생성 성공 - UserID: " + savedConsumable.getUserId() + 
+                System.out.println("소비 아이템 생성 성공 - ProfileID: " + savedConsumable.getProfileId() + 
                                  ", ItemDefID: " + savedConsumable.getItemDefId() + 
                                  ", 수량: " + savedConsumable.getQuantity());
                 
                 // 소비 아이템 조회 테스트
                 Optional<UserConsumableItem> foundConsumable = userConsumableItemRepository
-                    .findByUserIdAndItemDefId(1L, 101L);
+                    .findByProfileIdAndItemDefId(1L, 101L);
                 if (foundConsumable.isPresent()) {
                     System.out.println("소비 아이템 조회 성공: " + foundConsumable.get().getQuantity() + "개");
                 }
@@ -137,7 +136,7 @@ public class ToreMainServerApplication {
                 UserEquipItem testEquip = new UserEquipItem(1L, 201L, enhancementData, "0001");
                 UserEquipItem savedEquip = userEquipItemRepository.save(testEquip);
                 System.out.println("장비 아이템 생성 성공 - ID: " + savedEquip.getId() + 
-                                 ", UserID: " + savedEquip.getUserId() + 
+                                 ", ProfileID: " + savedEquip.getProfileId() + 
                                  ", ItemDefID: " + savedEquip.getItemDefId());
                 System.out.println("강화 데이터: " + savedEquip.getEnhancementData());
                 System.out.println("NFT ID: " + savedEquip.getNftId());

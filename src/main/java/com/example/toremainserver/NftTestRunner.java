@@ -6,6 +6,7 @@ import com.example.toremainserver.entity.UserEquipItem;
 import com.example.toremainserver.entity.User;
 import com.example.toremainserver.repository.UserEquipItemRepository;
 import com.example.toremainserver.repository.UserRepository;
+import com.example.toremainserver.repository.UserGameProfileRepository;
 import com.example.toremainserver.service.NftService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -23,6 +24,9 @@ public class NftTestRunner implements CommandLineRunner {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private UserGameProfileRepository userGameProfileRepository;
     
     @Autowired
     private NftService nftService;
@@ -79,10 +83,19 @@ public class NftTestRunner implements CommandLineRunner {
         
         for (UserEquipItem item : nonNftItems) {
             try {
-                // 사용자 정보 조회
-                Optional<User> userOpt = userRepository.findById(item.getUserId());
+                // 프로필 정보 조회를 통해 사용자 정보 조회
+                Optional<com.example.toremainserver.entity.UserGameProfile> profileOpt = 
+                    userGameProfileRepository.findById(item.getProfileId());
+                if (profileOpt.isEmpty()) {
+                    System.out.println("프로필 ID " + item.getProfileId() + "를 찾을 수 없습니다.");
+                    failCount++;
+                    continue;
+                }
+                
+                Long userId = profileOpt.get().getUserId();
+                Optional<User> userOpt = userRepository.findById(userId);
                 if (userOpt.isEmpty()) {
-                    System.out.println("사용자 ID " + item.getUserId() + "를 찾을 수 없습니다.");
+                    System.out.println("사용자 ID " + userId + "를 찾을 수 없습니다.");
                     failCount++;
                     continue;
                 }
@@ -93,6 +106,7 @@ public class NftTestRunner implements CommandLineRunner {
                 // NFT 민팅 요청 생성
                 NftMintClientRequest mintRequest = new NftMintClientRequest(
                     user.getId(),
+                    item.getProfileId(),
                     item.getId()  // equipItemId (단일 PK)
                 );
                 
@@ -140,10 +154,19 @@ public class NftTestRunner implements CommandLineRunner {
         
         for (UserEquipItem item : nftItems) {
             try {
-                // 사용자 정보 조회
-                Optional<User> userOpt = userRepository.findById(item.getUserId());
+                // 프로필 정보 조회를 통해 사용자 정보 조회
+                Optional<com.example.toremainserver.entity.UserGameProfile> profileOpt = 
+                    userGameProfileRepository.findById(item.getProfileId());
+                if (profileOpt.isEmpty()) {
+                    System.out.println("프로필 ID " + item.getProfileId() + "를 찾을 수 없습니다.");
+                    failCount++;
+                    continue;
+                }
+                
+                Long userId = profileOpt.get().getUserId();
+                Optional<User> userOpt = userRepository.findById(userId);
                 if (userOpt.isEmpty()) {
-                    System.out.println("사용자 ID " + item.getUserId() + "를 찾을 수 없습니다.");
+                    System.out.println("사용자 ID " + userId + "를 찾을 수 없습니다.");
                     failCount++;
                     continue;
                 }

@@ -3,11 +3,9 @@ package com.example.toremainserver.service;
 import com.example.toremainserver.entity.ItemDefinition;
 import com.example.toremainserver.entity.UserConsumableItem;
 import com.example.toremainserver.entity.UserEquipItem;
-import com.example.toremainserver.entity.User;
 import com.example.toremainserver.repository.ItemDefinitionRepository;
 import com.example.toremainserver.repository.UserConsumableItemRepository;
 import com.example.toremainserver.repository.UserEquipItemRepository;
-import com.example.toremainserver.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,27 +19,24 @@ public class ItemService {
     private final ItemDefinitionRepository itemDefinitionRepository;
     private final UserConsumableItemRepository userConsumableItemRepository;
     private final UserEquipItemRepository userEquipItemRepository;
-    private final UserRepository userRepository;
     
     @Autowired
     public ItemService(ItemDefinitionRepository itemDefinitionRepository, 
                       UserConsumableItemRepository userConsumableItemRepository,
-                      UserEquipItemRepository userEquipItemRepository,
-                      UserRepository userRepository) {
+                      UserEquipItemRepository userEquipItemRepository) {
         this.itemDefinitionRepository = itemDefinitionRepository;
         this.userConsumableItemRepository = userConsumableItemRepository;
         this.userEquipItemRepository = userEquipItemRepository;
-        this.userRepository = userRepository;
     }
     
-    // 사용자별 소비 아이템 조회
-    public List<UserConsumableItem> getConsumableItemsByUserId(Long userId) {
-        return userConsumableItemRepository.findByUserId(userId);
+    // 프로필별 소비 아이템 조회
+    public List<UserConsumableItem> getConsumableItemsByProfileId(Long profileId) {
+        return userConsumableItemRepository.findByProfileId(profileId);
     }
     
-    // 사용자별 장비 아이템 조회
-    public List<UserEquipItem> getEquipItemsByUserId(Long userId) {
-        return userEquipItemRepository.findByUserId(userId);
+    // 프로필별 장비 아이템 조회
+    public List<UserEquipItem> getEquipItemsByProfileId(Long profileId) {
+        return userEquipItemRepository.findByProfileId(profileId);
     }
     
     // 아이템 정의 조회
@@ -55,20 +50,15 @@ public class ItemService {
         return itemDefinitionRepository.findAll();
     }
     
-    // 사용자에게 소비 아이템 추가
-    public UserConsumableItem addConsumableItemToUser(Long userId, Long itemDefId, Integer quantity) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
-        }
-        
+    // 프로필에 소비 아이템 추가
+    public UserConsumableItem addConsumableItemToProfile(Long profileId, Long itemDefId, Integer quantity) {
         Optional<ItemDefinition> itemOptional = itemDefinitionRepository.findById(itemDefId);
         if (itemOptional.isEmpty()) {
             throw new RuntimeException("아이템 정의를 찾을 수 없습니다.");
         }
         
-        // userId와 itemDefId로 기존 아이템 조회 (복합키)
-        Optional<UserConsumableItem> existingItemOptional = userConsumableItemRepository.findByUserIdAndItemDefId(userId, itemDefId);
+        // profileId와 itemDefId로 기존 아이템 조회 (복합키)
+        Optional<UserConsumableItem> existingItemOptional = userConsumableItemRepository.findByProfileIdAndItemDefId(profileId, itemDefId);
         
         if (existingItemOptional.isPresent()) {
             // 기존 아이템이 있으면 수량만 증가
@@ -77,39 +67,29 @@ public class ItemService {
             return userConsumableItemRepository.save(existingItem);
         } else {
             // 없으면 새로 추가
-            UserConsumableItem userItem = new UserConsumableItem(userId, itemDefId, quantity);
+            UserConsumableItem userItem = new UserConsumableItem(profileId, itemDefId, quantity);
             return userConsumableItemRepository.save(userItem);
         }
     }
     
-    // 사용자에게 장비 아이템 추가
-    public UserEquipItem addEquipItemToUser(Long userId, Long itemDefId, Map<String, Object> enhancementData) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
-        }
-        
+    // 프로필에 장비 아이템 추가
+    public UserEquipItem addEquipItemToProfile(Long profileId, Long itemDefId, Map<String, Object> enhancementData) {
         Optional<ItemDefinition> itemOptional = itemDefinitionRepository.findById(itemDefId);
         if (itemOptional.isEmpty()) {
             throw new RuntimeException("아이템 정의를 찾을 수 없습니다.");
         }
         
         // 단일 PK(id) 자동 생성
-        UserEquipItem userItem = new UserEquipItem(userId, itemDefId, enhancementData, null);
+        UserEquipItem userItem = new UserEquipItem(profileId, itemDefId, enhancementData, null);
         return userEquipItemRepository.save(userItem);
     }
     
-    // 사용자 소비 아이템 제거 (수량 감소 또는 삭제)
-    public void removeConsumableItemFromUser(Long userId, Long itemDefId, Integer quantity) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
-        }
-        
-        // userId와 itemDefId로 아이템 조회 (복합키)
-        Optional<UserConsumableItem> userItemOptional = userConsumableItemRepository.findByUserIdAndItemDefId(userId, itemDefId);
+    // 프로필 소비 아이템 제거 (수량 감소 또는 삭제)
+    public void removeConsumableItemFromProfile(Long profileId, Long itemDefId, Integer quantity) {
+        // profileId와 itemDefId로 아이템 조회 (복합키)
+        Optional<UserConsumableItem> userItemOptional = userConsumableItemRepository.findByProfileIdAndItemDefId(profileId, itemDefId);
         if (userItemOptional.isEmpty()) {
-            throw new RuntimeException("사용자가 해당 소비 아이템을 보유하고 있지 않습니다.");
+            throw new RuntimeException("프로필이 해당 소비 아이템을 보유하고 있지 않습니다.");
         }
         
         UserConsumableItem userItem = userItemOptional.get();
@@ -132,8 +112,9 @@ public class ItemService {
         }
     }
     
-    // 사용자 장비 아이템 제거
-    public void removeEquipItemFromUser(Long equipItemId) {
+    // 프로필 장비 아이템 제거
+    public void removeEquipItemFromProfile(Long profileId, Long equipItemId) {
+
         // 단일 PK(id)로 직접 조회
         Optional<UserEquipItem> userItemOptional = userEquipItemRepository.findById(equipItemId);
         if (userItemOptional.isEmpty()) {
@@ -141,6 +122,10 @@ public class ItemService {
         }
         
         UserEquipItem userItem = userItemOptional.get();
+
+        if (userItem.getProfileId() != profileId) {
+            throw new RuntimeException("해당 프로필에 소유권이 없습니다.");
+        }
         
         // NFT화된 아이템은 삭제 불가
         if (userItem.getNftId() != null) {

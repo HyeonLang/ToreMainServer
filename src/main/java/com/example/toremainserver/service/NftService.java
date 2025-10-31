@@ -16,9 +16,11 @@ import com.example.toremainserver.dto.item.ItemData;
 import com.example.toremainserver.entity.ItemDefinition;
 import com.example.toremainserver.entity.User;
 import com.example.toremainserver.entity.UserEquipItem;
+import com.example.toremainserver.entity.UserGameProfile;
 import com.example.toremainserver.repository.ItemDefinitionRepository;
 import com.example.toremainserver.repository.UserEquipItemRepository;
 import com.example.toremainserver.repository.UserRepository;
+import com.example.toremainserver.repository.UserGameProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -49,6 +51,9 @@ public class NftService {
     private UserEquipItemRepository userEquipItemRepository;
     
     @Autowired
+    private UserGameProfileRepository userGameProfileRepository;
+    
+    @Autowired
     private RestTemplate restTemplate;
     
     @Value("${blockchain.server.url:http://localhost:3000}")
@@ -67,28 +72,37 @@ public class NftService {
                 return NftMintClientResponse.failure("사용자의 지갑 주소가 설정되지 않았습니다");
             }
             
-            // 2. UserEquipItem 조회 (단일 PK 사용)
+            // 2. 프로필 조회 및 소유권 검증
+            UserGameProfile profile = userGameProfileRepository.findById(request.getProfileId())
+                .orElseThrow(() -> new RuntimeException("프로필을 찾을 수 없습니다: " + request.getProfileId()));
+            
+            // userId와 profileId의 소유권 관계 검증
+            if (!profile.getUserId().equals(request.getUserId())) {
+                return NftMintClientResponse.failure("해당 프로필에 대한 권한이 없습니다");
+            }
+            
+            // 3. UserEquipItem 조회 (단일 PK 사용)
             UserEquipItem userEquipItem = userEquipItemRepository.findById(request.getEquipItemId())
                 .orElseThrow(() -> new RuntimeException("사용자 장비 아이템을 찾을 수 없습니다: " + request.getEquipItemId()));
             
-            // 3. 소유권 검증
-            if (!userEquipItem.getUserId().equals(request.getUserId())) {
+            // 4. 아이템 소유권 검증
+            if (!userEquipItem.getProfileId().equals(request.getProfileId())) {
                 return NftMintClientResponse.failure("해당 아이템에 대한 권한이 없습니다");
             }
 
-            // 4. 아이템 정의 조회
+            // 5. 아이템 정의 조회
             ItemDefinition itemDefinition = itemDefinitionRepository.findById(userEquipItem.getItemDefId())
                 .orElseThrow(() -> new RuntimeException("아이템 정의를 찾을 수 없습니다: " + userEquipItem.getItemDefId()));
 
-            // 5. 아이템이 이미 NFT화되었는지 확인
+            // 6. 아이템이 이미 NFT화되었는지 확인
             if (userEquipItem.getNftId() != null) {
                 return NftMintClientResponse.failure("이미 NFT화된 아이템입니다");
             }
             
-            // 6. 아이템 데이터 구성
+            // 7. 아이템 데이터 구성
             Map<String, Object> itemData = createItemData(itemDefinition, userEquipItem);
             
-            // 7. 블록체인 서버로 요청 전송
+            // 8. 블록체인 서버로 요청 전송
             ContractNftRequest contractRequest = new ContractNftRequest(
                 user.getWalletAddress(),
                 userEquipItem.getItemDefId(),
@@ -99,7 +113,7 @@ public class NftService {
             ContractNftResponse contractResponse = sendToBlockchainServer(contractRequest);
             
             if (contractResponse.isSuccess()) {
-                // 7. 성공 시 UserEquipItem에 NFT ID 업데이트
+                // 9. 성공 시 UserEquipItem에 NFT ID 업데이트
                 userEquipItem.setNftId(contractResponse.getNftId());
                 userEquipItemRepository.save(userEquipItem);
                 
@@ -284,11 +298,9 @@ public class NftService {
             if (userEquipItemOpt.isPresent()) {
                 UserEquipItem userEquipItem = userEquipItemOpt.get();
                 
-                // 3. 소유권이 다르면 동기화
-                if (!userEquipItem.getUserId().equals(user.getId())) {
-                    userEquipItem.setUserId(user.getId());
-                    userEquipItemRepository.save(userEquipItem);
-                }
+                // 3. 소유권이 다르면 동기화 (userId -> profileId로 변경되어 이 부분은 더 이상 필요하지 않을 수 있음)
+                // UserEquipItem은 이제 profileId를 사용하므로 User의 기본 프로필 또는 특정 프로필로 동기화 필요
+                // 이 부분은 비즈니스 로직에 따라 재설계가 필요할 수 있습니다
             } else {
                 // 4. NFT ID가 DB에 없으면 로그 기록 (새로 생성된 NFT일 수 있음)
                 System.out.println("Warning: NFT ID " + nftId + " not found in database for wallet " + walletAddress);
@@ -382,9 +394,9 @@ public class NftService {
     }
     
     /**
-     * 사용자 ID로 NFT화된 아이템 목록 조회
+     * 프로필 ID로 NFT화된 아이템 목록 조회
      */
-    public List<UserEquipItem> getUserNftItemsByUserId(Long userId) {
-        return userEquipItemRepository.findNftItemsByUserId(userId);
+    public List<UserEquipItem> getUserNftItemsByProfileId(Long profileId) {
+        return userEquipItemRepository.findNftItemsByProfileId(profileId);
     }
 }

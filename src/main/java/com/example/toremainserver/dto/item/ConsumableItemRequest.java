@@ -1,7 +1,7 @@
 package com.example.toremainserver.dto.item;
 
 public class ConsumableItemRequest {
-    private Long userId;
+    private Long profileId;
     private Long itemDefId;  // ItemDefinition.id 참조
     private Integer quantity;
 
@@ -9,19 +9,19 @@ public class ConsumableItemRequest {
     public ConsumableItemRequest() {}
 
     // 생성자
-    public ConsumableItemRequest(Long userId, Long itemDefId, Integer quantity) {
-        this.userId = userId;
+    public ConsumableItemRequest(Long profileId, Long itemDefId, Integer quantity) {
+        this.profileId = profileId;
         this.itemDefId = itemDefId;
         this.quantity = quantity;
     }
     
     // Getter와 Setter
-    public Long getUserId() {
-        return userId;
+    public Long getProfileId() {
+        return profileId;
     }
     
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setProfileId(Long profileId) {
+        this.profileId = profileId;
     }
     
     public Long getItemDefId() {

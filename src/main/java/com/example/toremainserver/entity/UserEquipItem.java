@@ -8,8 +8,8 @@ import java.util.Map;
 @Entity
 @Table(name = "user_equip_items",
               indexes = {
-                  @Index(name = "idx_user_id", columnList = "user_id"),
-                  @Index(name = "idx_user_item_def", columnList = "user_id, item_def_id"),
+                  @Index(name = "idx_profile_id", columnList = "profile_id"),
+                  @Index(name = "idx_profile_item_def", columnList = "profile_id, item_def_id"),
                   @Index(name = "idx_nft_id", columnList = "nft_id")
               })
 public class UserEquipItem {
@@ -19,8 +19,8 @@ public class UserEquipItem {
     @Column(name = "id")
     private Long id;  // 단일 PK (equipItemId로 사용)
     
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "profile_id", nullable = false)
+    private Long profileId;
     
     @Column(name = "item_def_id", nullable = false)
     private Long itemDefId;  // ItemDefinition.id 참조
@@ -36,19 +36,19 @@ public class UserEquipItem {
     public UserEquipItem() {}
     
     // 생성자
-    public UserEquipItem(Long userId, Long itemDefId) {
-        this.userId = userId;
+    public UserEquipItem(Long profileId, Long itemDefId) {
+        this.profileId = profileId;
         this.itemDefId = itemDefId;
     }
     
-    public UserEquipItem(Long userId, Long itemDefId, Map<String, Object> enhancementData) {
-        this.userId = userId;
+    public UserEquipItem(Long profileId, Long itemDefId, Map<String, Object> enhancementData) {
+        this.profileId = profileId;
         this.itemDefId = itemDefId;
         this.enhancementData = enhancementData;
     }
     
-    public UserEquipItem(Long userId, Long itemDefId, Map<String, Object> enhancementData, String nftId) {
-        this.userId = userId;
+    public UserEquipItem(Long profileId, Long itemDefId, Map<String, Object> enhancementData, String nftId) {
+        this.profileId = profileId;
         this.itemDefId = itemDefId;
         this.enhancementData = enhancementData;
         this.nftId = nftId;
@@ -63,12 +63,12 @@ public class UserEquipItem {
         this.id = id;
     }
     
-    public Long getUserId() {
-        return userId;
+    public Long getProfileId() {
+        return profileId;
     }
     
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setProfileId(Long profileId) {
+        this.profileId = profileId;
     }
     
     public Long getItemDefId() {

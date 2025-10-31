@@ -4,9 +4,9 @@ INSERT INTO users (username, password, playername, wallet_address, created_at, u
 -- 게임 프로필 테이블 초기 데이터 (userId: 1 - admin)
 INSERT INTO user_game_profiles (user_id, profile_name, level, experience, gold, equipped_items, skill_info, created_at, updated_at, version)
 VALUES
-(1, '메인 캐릭터', 10, 5000, 1500, '{"weapon": 1, "armor": 2, "accessory": 3}', '{"fireball": 3, "heal": 2, "shield": 1}', NOW(), NOW(), 0),
-(1, '서브 캐릭터', 5, 1200, 500, '{"weapon": 4}', '{"lightning": 2}', NOW(), NOW(), 0),
-(1, 'PVP 전용', 15, 12000, 3000, '{"weapon": 1, "armor": 2, "helmet": 5, "boots": 6}', '{"fireball": 5, "ice_storm": 4, "blink": 3}', NOW(), NOW(), 0);
+(1, '메인 캐릭터', 10, 9200, 1500, '{"weapon": 1, "armor": 2, "accessory": 3}', '{"fireball": 3, "heal": 2, "shield": 1}', NOW(), NOW(), 0),
+(1, '서브 캐릭터', 5, 4100, 500, '{"weapon": 4}', '{"lightning": 2}', NOW(), NOW(), 0),
+(1, 'PVP 전용', 15, 14300, 3000, '{"weapon": 1, "armor": 2, "helmet": 5, "boots": 6}', '{"fireball": 5, "ice_storm": 4, "blink": 3}', NOW(), NOW(), 0);
 
 -- 아이템 정의 테이블 초기 데이터
 INSERT INTO item_definitions (item_id, name, type, base_stats, description, is_stackable, max_stack, image_url, ipfs_image_url) 
@@ -17,18 +17,18 @@ VALUES
 (4, '가죽 갑옷', 'EQUIPMENT', '{"defense": 10, "durability": 80}', '가죽으로 만든 갑옷입니다.', false, 1, '/uploads/items/leather_armor.png', 'https://ipfs.io/ipfs/QmExample5');
 
 -- 사용자 소비 아이템 테이블 초기 데이터
-INSERT INTO user_consumable_items (user_id, item_def_id, quantity) 
+INSERT INTO user_consumable_items (profile_id, item_def_id, quantity) 
 VALUES 
-(1, 1, 10), -- admin이 체력 물약 10개
-(1, 2, 5);  -- admin이 마나 물약 5개
+(1, 1, 10), -- 메인 캐릭터가 체력 물약 10개
+(1, 2, 5);  -- 메인 캐릭터가 마나 물약 5개
 
 -- 사용자 장비 아이템 테이블 초기 데이터
-INSERT INTO user_equip_items (user_id, item_def_id, enhancement_data, nft_id) 
+INSERT INTO user_equip_items (profile_id, item_def_id, enhancement_data, nft_id) 
 VALUES 
-(1, 3, '{"level": 1, "enhancement": 0}', NULL), -- admin의 철검 (level 1)
-(1, 4, '{"level": 1, "enhancement": 0}', NULL), -- admin의 가죽 갑옷 (level 1)
-(1, 3, '{"level": 2, "enhancement": 0}', NULL), -- admin의 철검 (level 2)
-(1, 4, '{"level": 2, "enhancement": 0}', NULL); -- admin의 가죽 갑옷 (level 2)
+(1, 3, '{"level": 1, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 1)
+(1, 4, '{"level": 1, "enhancement": 0}', NULL), -- 메인 캐릭터의 가죽 갑옷 (level 1)
+(1, 3, '{"level": 2, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 2)
+(1, 4, '{"level": 2, "enhancement": 0}', NULL); -- 메인 캐릭터의 가죽 갑옷 (level 2)
 
 -- NPC 테이블 초기 데이터
 INSERT INTO npcs (npc_id, name, npc_info) 

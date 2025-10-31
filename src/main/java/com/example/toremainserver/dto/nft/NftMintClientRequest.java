@@ -9,6 +9,10 @@ public class NftMintClientRequest {
     @Positive(message = "사용자 ID는 양수여야 합니다")
     private Long userId;
     
+    @NotNull(message = "프로필 ID는 필수입니다")
+    @Positive(message = "프로필 ID는 양수여야 합니다")
+    private Long profileId;
+    
     @NotNull(message = "장비 아이템 ID는 필수입니다")
     @Positive(message = "장비 아이템 ID는 양수여야 합니다")
     private Long equipItemId;  // 단일 PK (UserEquipItem의 id)
@@ -17,8 +21,9 @@ public class NftMintClientRequest {
     public NftMintClientRequest() {}
     
     // 생성자
-    public NftMintClientRequest(Long userId, Long equipItemId) {
+    public NftMintClientRequest(Long userId, Long profileId, Long equipItemId) {
         this.userId = userId;
+        this.profileId = profileId;
         this.equipItemId = equipItemId;
     }
     
@@ -29,6 +34,14 @@ public class NftMintClientRequest {
     
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+    
+    public Long getProfileId() {
+        return profileId;
+    }
+    
+    public void setProfileId(Long profileId) {
+        this.profileId = profileId;
     }
     
     public Long getEquipItemId() {

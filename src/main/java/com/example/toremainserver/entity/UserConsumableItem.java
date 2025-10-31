@@ -8,8 +8,8 @@ import jakarta.persistence.*;
 public class UserConsumableItem {
     
     @Id
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "profile_id")
+    private Long profileId;
     
     @Id
     @Column(name = "item_def_id")
@@ -22,19 +22,19 @@ public class UserConsumableItem {
     public UserConsumableItem() {}
     
     // 생성자
-    public UserConsumableItem(Long userId, Long itemDefId, Integer quantity) {
-        this.userId = userId;
+    public UserConsumableItem(Long profileId, Long itemDefId, Integer quantity) {
+        this.profileId = profileId;
         this.itemDefId = itemDefId;
         this.quantity = quantity;
     }
     
     // Getter와 Setter
-    public Long getUserId() {
-        return userId;
+    public Long getProfileId() {
+        return profileId;
     }
     
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setProfileId(Long profileId) {
+        this.profileId = profileId;
     }
     
     public Long getItemDefId() {
