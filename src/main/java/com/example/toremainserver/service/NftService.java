@@ -65,6 +65,9 @@ public class NftService {
     @Value("${blockchain.contract.address:0x1234567890abcdef}")
     private String contractAddress;
     
+    @Value("${server.url:http://localhost:8080}")
+    private String serverUrl;
+    
     public NftMintClientResponse mintNft(NftMintClientRequest request) {
         try {
             // 1. 사용자 정보 조회
@@ -106,7 +109,7 @@ public class NftService {
             Map<String, Object> itemData = createItemData(itemDefinition, userEquipItem);
             
             // 8. metadataUrl 생성
-            String metadataUrl = "http://localhost:8080/api/metadata/" + userEquipItem.getId();
+            String metadataUrl = serverUrl + "/api/metadata/" + userEquipItem.getId();
             
             // 9. 블록체인 서버로 요청 전송
             ContractNftRequest contractRequest = new ContractNftRequest(
