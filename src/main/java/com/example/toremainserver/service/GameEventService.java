@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -290,25 +292,86 @@ public class GameEventService {
     }
 
     /**
-     * UE5에서 받은 질감/색 정보를 파이썬 AI 서버로 그대로 전달하고,
-     * 파이썬 AI 서버의 응답(multipart/form-data)을 UE5로 반환합니다.
+     * UE5에서 받은 질감/색 정보를 파이썬 AI 서버로 전달하고,
+     * 파이썬 AI 서버의 응답을 UE5로 반환합니다.
      * (게이트웨이 역할)
-     * @param body UE5에서 받은 description 등 정보 (api_key 포함)
-     * @return 파이썬 AI 서버의 응답(multipart/form-data)
+     * @param body UE5에서 받은 요청 (materialDescription: string, materialInfo: json)
+     * @return 파이썬 AI 서버의 응답 (baseColor64, normalMap64, ORMMap64, emissiveMap64)
      */
     public ResponseEntity<?> forwardMaterialRequest(Map<String, Object> body) {
-        // 요청 헤더 설정 (JSON)
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        // 파이썬 AI 서버의 Material 엔드포인트로 POST 요청
-        String url = aiServerUrl + "/api.ai/material";
-        ResponseEntity<byte[]> response = restTemplate.postForEntity(url, request, byte[].class);
-        // 응답 헤더 설정 (multipart/form-data)
-        HttpHeaders respHeaders = new HttpHeaders();
-        respHeaders.setContentType(MediaType.MULTIPART_FORM_DATA);
-        // 파이썬 AI 서버의 응답을 그대로 반환
-        return new ResponseEntity<>(response.getBody(), respHeaders, response.getStatusCode());
+        try {
+            // 요청 로그 출력
+            try {
+                String requestJson = objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(body);
+                logger.info("=== Material Request ===");
+                logger.info("URL: {}/api.ai/material", aiServerUrl);
+                logger.info("Request Body:\n{}", requestJson);
+            } catch (Exception e) {
+                logger.error("Failed to log Material request", e);
+            }
+            
+            // 요청 헤더 설정 (JSON)
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            
+            // 파이썬 AI 서버의 Material 엔드포인트로 POST 요청
+            String url = aiServerUrl + "/api.ai/material";
+            ParameterizedTypeReference<Map<String, Object>> responseType = 
+                new ParameterizedTypeReference<Map<String, Object>>() {};
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                url, HttpMethod.POST, request, responseType);
+            
+            // 응답 로그 출력
+            try {
+                String responseJson = objectMapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(response.getBody());
+                logger.info("=== Material Response ===");
+                logger.info("Status Code: {}", response.getStatusCode());
+                logger.info("Response Body:\n{}", responseJson);
+            } catch (Exception e) {
+                logger.error("Failed to log Material response", e);
+            }
+            
+            // 응답이 성공적이면 JSON 응답 반환
+            Map<String, Object> responseBody = response.getBody();
+            if (response.getStatusCode().is2xxSuccessful() && responseBody != null) {
+                // 응답 형식: { baseColor64, normalMap64, ORMMap64, emissiveMap64 }
+                Map<String, String> materialResponse = new java.util.HashMap<>();
+                
+                if (responseBody.get("baseColor64") != null) {
+                    materialResponse.put("baseColor64", responseBody.get("baseColor64").toString());
+                }
+                if (responseBody.get("normalMap64") != null) {
+                    materialResponse.put("normalMap64", responseBody.get("normalMap64").toString());
+                }
+                if (responseBody.get("ORMMap64") != null) {
+                    materialResponse.put("ORMMap64", responseBody.get("ORMMap64").toString());
+                }
+                if (responseBody.get("emissiveMap64") != null) {
+                    materialResponse.put("emissiveMap64", responseBody.get("emissiveMap64").toString());
+                }
+                
+                return ResponseEntity.status(response.getStatusCode()).body(materialResponse);
+            } else {
+                return ResponseEntity.status(response.getStatusCode()).body(responseBody);
+            }
+            
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            // AI 서버 에러 응답 로그 출력
+            logger.error("=== Material Server Response (ERROR) ===");
+            logger.error("Status Code: {}", e.getStatusCode());
+            logger.error("Error Response Body:\n{}", e.getResponseBodyAsString());
+            return ResponseEntity.status(e.getStatusCode()).body(
+                java.util.Collections.singletonMap("error", e.getResponseBodyAsString())
+            );
+        } catch (Exception e) {
+            logger.error("Material request error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                java.util.Collections.singletonMap("error", "Material 처리 중 오류가 발생했습니다: " + e.getMessage())
+            );
+        }
     }
     
     /**
