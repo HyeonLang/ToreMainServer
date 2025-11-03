@@ -6,6 +6,7 @@ import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "conversations")
@@ -16,6 +17,7 @@ public class Conversation {
         private String speaker; // "player" 또는 "npc"
         private String message;
         private String timestamp;
+        private Map<String, Object> emotionData; // 감정 데이터 (JSON)
         
         public ChatHistory() {}
         
@@ -23,6 +25,13 @@ public class Conversation {
             this.speaker = speaker;
             this.message = message;
             this.timestamp = timestamp;
+        }
+        
+        public ChatHistory(String speaker, String message, String timestamp, Map<String, Object> emotionData) {
+            this.speaker = speaker;
+            this.message = message;
+            this.timestamp = timestamp;
+            this.emotionData = emotionData;
         }
         
         // Getter와 Setter
@@ -48,6 +57,14 @@ public class Conversation {
         
         public void setTimestamp(String timestamp) {
             this.timestamp = timestamp;
+        }
+        
+        public Map<String, Object> getEmotionData() {
+            return emotionData;
+        }
+        
+        public void setEmotionData(Map<String, Object> emotionData) {
+            this.emotionData = emotionData;
         }
     }
     

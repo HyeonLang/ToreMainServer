@@ -1,5 +1,7 @@
 package com.example.toremainserver.dto.game;
 
+import java.util.Map;
+
 public class Ue5NpcResponse {
     
     // 대화 기록을 위한 내부 클래스
@@ -7,6 +9,7 @@ public class Ue5NpcResponse {
         private String speaker; // "player" 또는 "npc"
         private String message;
         private String timestamp;
+        private Map<String, Object> emotionData; // 감정 데이터 (JSON)
         
         public ChatHistory() {}
         
@@ -14,6 +17,13 @@ public class Ue5NpcResponse {
             this.speaker = speaker;
             this.message = message;
             this.timestamp = timestamp;
+        }
+        
+        public ChatHistory(String speaker, String message, String timestamp, Map<String, Object> emotionData) {
+            this.speaker = speaker;
+            this.message = message;
+            this.timestamp = timestamp;
+            this.emotionData = emotionData;
         }
         
         // Getter와 Setter
@@ -39,6 +49,14 @@ public class Ue5NpcResponse {
         
         public void setTimestamp(String timestamp) {
             this.timestamp = timestamp;
+        }
+        
+        public Map<String, Object> getEmotionData() {
+            return emotionData;
+        }
+        
+        public void setEmotionData(Map<String, Object> emotionData) {
+            this.emotionData = emotionData;
         }
     }
     

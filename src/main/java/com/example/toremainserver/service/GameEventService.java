@@ -135,58 +135,59 @@ public class GameEventService {
         // UE5 요청의 playerDescription JSON을 포맷팅된 문자열로 변환
         String playerDescription = buildPlayerDescription(ue5Request.getPlayerDescription(), playerName);
         
-        String systemMessages = "대화는 다음과 같은 규칙을 가집니다. 대화에는 { } 기호가 들어가면 안됩니다. 대화는 앞쪽에 ()가 있다면 () 안의 내용은 발언자가 발언을 하면서 느끼는 속마음 혹은 행동과 같은 비언어적 표현입니다.  속마음 혹은 행동과 같은 비언어적 표현이 없다면 언급이 딱히 필요없었던 것입니다. 만약 대답을 생성 할 때 속마음 혹은 행동과 같은 비언어적 표현에 대한 언급이 필요하다면 대답 앞쪽에 ()를 생성하여 안에 속마음을 쓰도록 합니다." +
-                " \n 또한 반드시 대답을 생성 한 후 현재 당신의 role인 화자의 상태를 분석하여 내포된 감정 상태를 수치화 합니다. 이 과정은 응답에서 빠지면 안됩니다. 규칙은 다음과 같습니다." +
-                " \n ## 1. 차원형 감정 모델 (Dimensional Model)\n" +
-                "\n" +
-                "이 모델은 감정 상태를 몇 개의 연속적인 축(Dimension)으로 표현하여, 모든 복합적인 감정을 **연속적인 좌표 공간** 내에서 위치시킵니다. 분석된 감정은 **Valence-Arousal (VA) 평면** 상의 점으로 표현됩니다.\n" +
-                "\n" +
-                "* **Valence (V, 쾌/불쾌):** 감정의 **긍정적/부정적** 정도를 나타내는 축입니다.\n" +
-                "    * **정의:** 텍스트가 전달하는 주관적인 즐거움 또는 불쾌함의 수준을 측정합니다.\n" +
-                "    * **범위:** **-100 (극도의 불쾌/부정)** ~ **100 (극도의 쾌/긍정)**\n" +
-                "\n" +
-                "* **Arousal (A, 각성/진정):** 감정의 **에너지 수준** 또는 **강도**를 나타내는 축입니다.\n" +
-                "    * **정의:** 텍스트가 전달하는 생리적 및 심리적 활성화 수준(흥분도)을 측정합니다.\n" +
-                "    * **범위:** **-100 (극도의 진정/비활성)** ~ **100 (극도의 각성/활성)**\n" +
-                "\n" +
-                "## 2. 범주형 감정 모델 (Categorical Model)\n" +
-                "\n" +
-                "이 모델은 감정을 서로 **명확히 구분되는 독립적인 카테고리**로 분류합니다. 분석은 **폴 에크먼(Paul Ekman)**이 정의한 6가지 기본 감정을 기반으로 각 감정의 **독립적인 강도(Intensity)**를 수치화합니다.\n" +
-                "\n" +
-                "* **강도 정의:** 각 감정은 텍스트 내에서 동시에 존재할 수 있으며, 그 강도는 개별적으로 측정됩니다.\n" +
-                "* **범위:** **0 (감정 없음)** ~ **100 (극도의 강도)** 범위의 **정수**입니다.\n" +
-                "\n" +
-                "* **포함 카테고리:**\n" +
-                "    * **joy** (기쁨): 즐거움, 행복\n" +
-                "    * **sadness** (슬픔): 실망, 상실감\n" +
-                "    * **anger** (분노): 적대감, 격분\n" +
-                "    * **surprise** (놀람): 예상치 못한 상황에 대한 반응\n" +
-                "    * **fear** (두려움): 공포, 위험에 대한 불안\n" +
-                "    * **disgust** (혐오): 불쾌함, 거부감" +
-                "[출력 규칙]\n" +
-                "1. 대화 뒤에 다음과 같은 [반환 JSON 구조 및 제약 조건] 따라 json 형태로 응답합니다. 속성명, 줄바꿈, 값 형식 등의 기본적인 규칙을 반드시 준수합니다. 속성 내에 이외의 설명, 대화, 부가적인 텍스트는 일절 허용되지 않습니다.\n" +
-                "2. 모든 감정 수치는 정수(Integer)로만 반환해야 합니다. Float(실수)는 사용할 수 없습니다.\n" +
-                "\n" +
-                "[반환 JSON 구조 및 제약 조건]\n" +
-                "\n" +
-                "\"emotionData\": {\n" +
-                "\"dimensional\": {\n" +
-                "\"valence\": \"V 값 (-100 ~ 100 사이의 정수)\",\n" +
-                "\"arousal\": \"A 값 (-100 ~ 100 사이의 정수)\"\n" +
-                "},\n" +
-                "\"categorical\": {\n" +
-                "\"joy\": \"기쁨 (0 ~ 100 사이의 정수)\",\n" +
-                "\"sadness\": \"슬픔 (0 ~ 100 사이의 정수)\",\n" +
-                "\"anger\": \"분노 (0 ~ 100 사이의 정수)\",\n" +
-                "\"surprise\": \"놀람 (0 ~ 100 사이의 정수)\",\n" +
-                "\"fear\": \"두려움 (0 ~ 100 사이의 정수)\",\n" +
-                "\"disgust\": \"혐오 (0 ~ 100 사이의 정수)\"\n" +
-                "}\n" +
-                "}\n\n" +
-                "[출력 예시]\n" +
-                "('role이름'은/는 반가운 미소를 지으며 대답한다.) 어머, 손님! 제가 좀 바쁘긴 하지만, 손님이 오셨으니 조금 더 신경을 써드릴게요. 어떤 물건을 찾고 계신가요? 요즘 정말 흥미로운 아이템들이 많이 들어왔답니다!\n" +
-                "\n" +
-                "{\"emotionData\": {\"dimensional\": {\"valence\": 90, \"arousal\": 30}, \"categorical\": {\"joy\": 70, \"sadness\": 0, \"anger\": 0, \"surprise\": 10, \"fear\": 0, \"disgust\": 0}}}";
+        String systemMessages = "대화는 다음과 같은 규칙을 가집니다. 대화에는 { } 기호가 들어가면 안됩니다. 대화는 앞쪽에 ()가 있다면 () 안의 내용은 발언자가 발언을 하면서 느끼는 속마음 혹은 행동과 같은 비언어적 표현입니다.  속마음 혹은 행동과 같은 비언어적 표현이 없다면 언급이 딱히 필요없었던 것입니다. 만약 대답을 생성 할 때 속마음 혹은 행동과 같은 비언어적 표현에 대한 언급이 필요하다면 대답 앞쪽에 ()를 생성하여 안에 속마음을 쓰도록 합니다."
+//                + " \n 또한 반드시 대답을 생성 한 후 현재 당신의 role인 화자의 상태를 분석하여 내포된 감정 상태를 수치화 합니다. 이 과정은 응답에서 빠지면 안됩니다. 규칙은 다음과 같습니다." +
+//                " \n ## 1. 차원형 감정 모델 (Dimensional Model)\n" +
+//                "\n" +
+//                "이 모델은 감정 상태를 몇 개의 연속적인 축(Dimension)으로 표현하여, 모든 복합적인 감정을 **연속적인 좌표 공간** 내에서 위치시킵니다. 분석된 감정은 **Valence-Arousal (VA) 평면** 상의 점으로 표현됩니다.\n" +
+//                "\n" +
+//                "* **Valence (V, 쾌/불쾌):** 감정의 **긍정적/부정적** 정도를 나타내는 축입니다.\n" +
+//                "    * **정의:** 텍스트가 전달하는 주관적인 즐거움 또는 불쾌함의 수준을 측정합니다.\n" +
+//                "    * **범위:** **-100 (극도의 불쾌/부정)** ~ **100 (극도의 쾌/긍정)**\n" +
+//                "\n" +
+//                "* **Arousal (A, 각성/진정):** 감정의 **에너지 수준** 또는 **강도**를 나타내는 축입니다.\n" +
+//                "    * **정의:** 텍스트가 전달하는 생리적 및 심리적 활성화 수준(흥분도)을 측정합니다.\n" +
+//                "    * **범위:** **-100 (극도의 진정/비활성)** ~ **100 (극도의 각성/활성)**\n" +
+//                "\n" +
+//                "## 2. 범주형 감정 모델 (Categorical Model)\n" +
+//                "\n" +
+//                "이 모델은 감정을 서로 **명확히 구분되는 독립적인 카테고리**로 분류합니다. 분석은 **폴 에크먼(Paul Ekman)**이 정의한 6가지 기본 감정을 기반으로 각 감정의 **독립적인 강도(Intensity)**를 수치화합니다.\n" +
+//                "\n" +
+//                "* **강도 정의:** 각 감정은 텍스트 내에서 동시에 존재할 수 있으며, 그 강도는 개별적으로 측정됩니다.\n" +
+//                "* **범위:** **0 (감정 없음)** ~ **100 (극도의 강도)** 범위의 **정수**입니다.\n" +
+//                "\n" +
+//                "* **포함 카테고리:**\n" +
+//                "    * **joy** (기쁨): 즐거움, 행복\n" +
+//                "    * **sadness** (슬픔): 실망, 상실감\n" +
+//                "    * **anger** (분노): 적대감, 격분\n" +
+//                "    * **surprise** (놀람): 예상치 못한 상황에 대한 반응\n" +
+//                "    * **fear** (두려움): 공포, 위험에 대한 불안\n" +
+//                "    * **disgust** (혐오): 불쾌함, 거부감" +
+//                "[출력 규칙]\n" +
+//                "1. 대화 뒤에 다음과 같은 [반환 JSON 구조 및 제약 조건] 따라 json 형태로 응답합니다. 속성명, 줄바꿈, 값 형식 등의 기본적인 규칙을 반드시 준수합니다. 속성 내에 이외의 설명, 대화, 부가적인 텍스트는 일절 허용되지 않습니다.\n" +
+//                "2. 모든 감정 수치는 정수(Integer)로만 반환해야 합니다. Float(실수)는 사용할 수 없습니다.\n" +
+//                "\n" +
+//                "[반환 JSON 구조 및 제약 조건]\n" +
+//                "\n" +
+//                "\"emotionData\": {\n" +
+//                "\"dimensional\": {\n" +
+//                "\"valence\": \"V 값 (-100 ~ 100 사이의 정수)\",\n" +
+//                "\"arousal\": \"A 값 (-100 ~ 100 사이의 정수)\"\n" +
+//                "},\n" +
+//                "\"categorical\": {\n" +
+//                "\"joy\": \"기쁨 (0 ~ 100 사이의 정수)\",\n" +
+//                "\"sadness\": \"슬픔 (0 ~ 100 사이의 정수)\",\n" +
+//                "\"anger\": \"분노 (0 ~ 100 사이의 정수)\",\n" +
+//                "\"surprise\": \"놀람 (0 ~ 100 사이의 정수)\",\n" +
+//                "\"fear\": \"두려움 (0 ~ 100 사이의 정수)\",\n" +
+//                "\"disgust\": \"혐오 (0 ~ 100 사이의 정수)\"\n" +
+//                "}\n" +
+//                "}\n\n" +
+//                "[출력 예시]\n" +
+//                "('role이름'은/는 반가운 미소를 지으며 대답한다.) 어머, 손님! 제가 좀 바쁘긴 하지만, 손님이 오셨으니 조금 더 신경을 써드릴게요. 어떤 물건을 찾고 계신가요? 요즘 정말 흥미로운 아이템들이 많이 들어왔답니다!\n" +
+//                "\n" +
+//                "{\"emotionData\": {\"dimensional\": {\"valence\": 90, \"arousal\": 30}, \"categorical\": {\"joy\": 70, \"sadness\": 0, \"anger\": 0, \"surprise\": 10, \"fear\": 0, \"disgust\": 0}}}"
+                ;
         // DB에서 조회
         
         // currentPlayerMessage에서 message 추출
@@ -335,13 +336,14 @@ public class GameEventService {
             return null;
         }
         
-        // npcResponse 변환
+        // npcResponse 변환 (emotionData 포함)
         Ue5NpcResponse.ChatHistory ue5NpcResponse = null;
         if (npcChatResponse.getNpcResponse() != null) {
             ue5NpcResponse = new Ue5NpcResponse.ChatHistory(
                 npcChatResponse.getNpcResponse().getSpeaker(),
                 npcChatResponse.getNpcResponse().getMessage(),
-                npcChatResponse.getNpcResponse().getTimestamp()
+                npcChatResponse.getNpcResponse().getTimestamp(),
+                npcChatResponse.getNpcResponse().getEmotionData()
             );
         }
         
@@ -430,12 +432,13 @@ public class GameEventService {
             recentHistory.add(playerMessage);
         }
         
-        // 2. npcResponse 추가
+        // 2. npcResponse 추가 (emotionData 포함)
         if (npcChatResponse.getNpcResponse() != null) {
             Conversation.ChatHistory npcResponse = new Conversation.ChatHistory(
                 npcChatResponse.getNpcResponse().getSpeaker(),
                 npcChatResponse.getNpcResponse().getMessage(),
-                npcChatResponse.getNpcResponse().getTimestamp()
+                npcChatResponse.getNpcResponse().getTimestamp(),
+                npcChatResponse.getNpcResponse().getEmotionData()  // ChatHistory 내부의 emotionData
             );
             recentHistory.add(npcResponse);
         }

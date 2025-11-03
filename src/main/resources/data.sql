@@ -11,10 +11,10 @@ VALUES
 -- 아이템 정의 테이블 초기 데이터
 INSERT INTO item_definitions (item_id, name, type, base_stats, description, is_stackable, max_stack, image_url, ipfs_image_url) 
 VALUES 
-(1, '체력 물약', 'CONSUMABLE', '{"heal": 50, "duration": 0}', '체력을 50 회복시키는 물약입니다.', true, 99, '/uploads/items/health_potion.png', 'https://ipfs.io/ipfs/QmExample1'),
-(2, '마나 물약', 'CONSUMABLE', '{"mana": 30, "duration": 0}', '마나를 30 회복시키는 물약입니다.', true, 99, '/uploads/items/mana_potion.png', 'https://ipfs.io/ipfs/QmExample2'),
-(3, '철검', 'EQUIPMENT', '{"attack": 15, "durability": 100}', '기본적인 철검입니다.', false, 1, '/uploads/items/iron_sword.png', 'https://ipfs.io/ipfs/QmExample4'),
-(4, '가죽 갑옷', 'EQUIPMENT', '{"defense": 10, "durability": 80}', '가죽으로 만든 갑옷입니다.', false, 1, '/uploads/items/leather_armor.png', 'https://ipfs.io/ipfs/QmExample5');
+(1, '체력 물약', 'CONSUMABLE', '{"health": 50, "duration": 0}', '체력을 50 회복시키는 물약입니다.', true, 99, '/uploads/items/health_potion.png', 'ipfs://bafkreieioitiq5xrkqzwupweupl4vitkeieww5e5nmlxttx2vmhpjnv4zq'),
+(2, '마나 물약', 'CONSUMABLE', '{"mana": 30, "duration": 0}', '마나를 30 회복시키는 물약입니다.', true, 99, '/uploads/items/mana_potion.png', 'ipfs://bafkreihr2a2irxvz3f5uvb4lxa7wmwvqeo2qfc3ezurihfxef2qtpf2l3m'),
+(3, '철검', 'EQUIPMENT', '{"attack": 15, "durability": 100}', '기본적인 철검입니다.', false, 1, '/uploads/items/iron_sword.png', 'ipfs://bafkreicqxmszqt2tcmf5aqqblokcs2uhem2e4mzbt7pvkjeiitjk5s3atu'),
+(4, '가죽 갑옷', 'EQUIPMENT', '{"health": 10, "durability": 80}', '가죽으로 만든 갑옷입니다.', false, 1, '/uploads/items/leather_armor.png', 'ipfs://https://bafkreidjnwybxkem2ghdhbwn23wopyldw376qfmd626quqb5zblyjummse');
 
 -- 사용자 소비 아이템 테이블 초기 데이터
 INSERT INTO user_consumable_items (profile_id, item_def_id, quantity) 
@@ -25,10 +25,10 @@ VALUES
 -- 사용자 장비 아이템 테이블 초기 데이터
 INSERT INTO user_equip_items (profile_id, item_def_id, enhancement_data, nft_id) 
 VALUES 
-(1, 3, '{"level": 1, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 1)
-(1, 4, '{"level": 1, "enhancement": 0}', NULL), -- 메인 캐릭터의 가죽 갑옷 (level 1)
-(1, 3, '{"level": 2, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 2)
-(1, 4, '{"level": 2, "enhancement": 0}', NULL); -- 메인 캐릭터의 가죽 갑옷 (level 2)
+(1, 3, '{"star": 1, "attack" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 1)
+(1, 4, '{"star": 1, "health" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 가죽 갑옷 (level 1)
+(1, 3, '{"star": 2, "attack" : 13, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 2)
+(1, 4, '{"star": 2, "health" : 9, "enhancement": 0}', NULL); -- 메인 캐릭터의 가죽 갑옷 (level 2)
 
 -- NPC 테이블 초기 데이터
 INSERT INTO npcs (npc_id, name, npc_info) 

@@ -1,53 +1,109 @@
 package com.example.toremainserver.dto.nft;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ContractNftResponse {
     
-    private boolean success;
-    private String errorMessage;
-    private String nftId;
+    // 성공 시 필드들
+    private String txHash;
+    private Long tokenId;
+    private String tokenURI;
+    private String contractAddress;
+    private String mintedTo;
+    private Long itemId;
+    private Long userEquipItemId;
+    private Boolean itemDataIncluded;
     
     // 기본 생성자
     public ContractNftResponse() {}
     
-    // 모든 필드를 받는 생성자
-    public ContractNftResponse(boolean success, String nftId, String errorMessage) {
-        this.success = success;
-        this.nftId = nftId;
-        this.errorMessage = errorMessage;
+    // 성공 응답 생성자
+    public ContractNftResponse(String txHash, Long tokenId, String tokenURI, 
+                                String contractAddress, String mintedTo, 
+                                Long itemId, Long userEquipItemId, Boolean itemDataIncluded) {
+        this.txHash = txHash;
+        this.tokenId = tokenId;
+        this.tokenURI = tokenURI;
+        this.contractAddress = contractAddress;
+        this.mintedTo = mintedTo;
+        this.itemId = itemId;
+        this.userEquipItemId = userEquipItemId;
+        this.itemDataIncluded = itemDataIncluded;
     }
     
-    // 성공 응답 생성 메서드
-    public static ContractNftResponse success(String nftId) {
-        return new ContractNftResponse(true, nftId, null);
-    }
-    
-    // 실패 응답 생성 메서드
-    public static ContractNftResponse failure(String errorMessage) {
-        return new ContractNftResponse(false, null, errorMessage);
+    // 성공 여부 확인 (tokenId가 있으면 성공)
+    public boolean isSuccess() {
+        return tokenId != null;
     }
     
     // Getter와 Setter
-    public boolean isSuccess() {
-        return success;
+    public String getTxHash() {
+        return txHash;
     }
     
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public void setTxHash(String txHash) {
+        this.txHash = txHash;
     }
     
-    public String getErrorMessage() {
-        return errorMessage;
+    public Long getTokenId() {
+        return tokenId;
     }
     
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
+    public void setTokenId(Long tokenId) {
+        this.tokenId = tokenId;
     }
     
+    public String getTokenURI() {
+        return tokenURI;
+    }
+    
+    public void setTokenURI(String tokenURI) {
+        this.tokenURI = tokenURI;
+    }
+    
+    public String getContractAddress() {
+        return contractAddress;
+    }
+    
+    public void setContractAddress(String contractAddress) {
+        this.contractAddress = contractAddress;
+    }
+    
+    public String getMintedTo() {
+        return mintedTo;
+    }
+    
+    public void setMintedTo(String mintedTo) {
+        this.mintedTo = mintedTo;
+    }
+    
+    public Long getItemId() {
+        return itemId;
+    }
+    
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+    
+    public Long getUserEquipItemId() {
+        return userEquipItemId;
+    }
+    
+    public void setUserEquipItemId(Long userEquipItemId) {
+        this.userEquipItemId = userEquipItemId;
+    }
+    
+    public Boolean getItemDataIncluded() {
+        return itemDataIncluded;
+    }
+    
+    public void setItemDataIncluded(Boolean itemDataIncluded) {
+        this.itemDataIncluded = itemDataIncluded;
+    }
+    
+    // 하위 호환성을 위한 메서드 (기존 코드에서 사용 중)
     public String getNftId() {
-        return nftId;
-    }
-    
-    public void setNftId(String nftId) {
-        this.nftId = nftId;
+        return tokenId != null ? tokenId.toString() : null;
     }
 }

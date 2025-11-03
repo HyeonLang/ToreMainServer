@@ -20,6 +20,9 @@ public class ContractNftRequest {
     @NotNull(message = "아이템 데이터는 필수입니다")
     private Object itemData; // JSON 형태의 아이템 데이터
     
+    // 유동적인 Item 정보를 JSON으로 받는 HTTP 링크
+    private String metadataUrl;
+    
     // 기본 생성자
     public ContractNftRequest() {}
     
@@ -29,6 +32,15 @@ public class ContractNftRequest {
         this.itemDefId = itemDefId;
         this.equipItemId = equipItemId;
         this.itemData = itemData;
+    }
+    
+    // 생성자 (metadataUrl 포함)
+    public ContractNftRequest(String walletAddress, Long itemDefId, Long equipItemId, Object itemData, String metadataUrl) {
+        this.walletAddress = walletAddress;
+        this.itemDefId = itemDefId;
+        this.equipItemId = equipItemId;
+        this.itemData = itemData;
+        this.metadataUrl = metadataUrl;
     }
     
     // Getter와 Setter
@@ -63,5 +75,13 @@ public class ContractNftRequest {
     
     public void setItemData(Object itemData) {
         this.itemData = itemData;
+    }
+    
+    public String getMetadataUrl() {
+        return metadataUrl;
+    }
+    
+    public void setMetadataUrl(String metadataUrl) {
+        this.metadataUrl = metadataUrl;
     }
 }

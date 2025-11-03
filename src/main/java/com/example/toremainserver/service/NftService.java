@@ -31,6 +31,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +42,7 @@ import java.util.Optional;
 
 @Service
 public class NftService {
+    private static final Logger logger = LoggerFactory.getLogger(NftService.class);
     
     @Autowired
     private UserRepository userRepository;
@@ -102,24 +105,28 @@ public class NftService {
             // 7. 아이템 데이터 구성
             Map<String, Object> itemData = createItemData(itemDefinition, userEquipItem);
             
-            // 8. 블록체인 서버로 요청 전송
+            // 8. metadataUrl 생성
+            String metadataUrl = "http://localhost:8080/api/metadata/" + userEquipItem.getId();
+            
+            // 9. 블록체인 서버로 요청 전송
             ContractNftRequest contractRequest = new ContractNftRequest(
                 user.getWalletAddress(),
                 userEquipItem.getItemDefId(),
                 userEquipItem.getId(),
-                itemData
+                itemData,
+                metadataUrl
             );
             
             ContractNftResponse contractResponse = sendToBlockchainServer(contractRequest);
             
-            if (contractResponse.isSuccess()) {
-                // 9. 성공 시 UserEquipItem에 NFT ID 업데이트
+            if (contractResponse != null && contractResponse.isSuccess()) {
+                // 10. 성공 시 UserEquipItem에 NFT ID 업데이트
                 userEquipItem.setNftId(contractResponse.getNftId());
                 userEquipItemRepository.save(userEquipItem);
                 
                 return NftMintClientResponse.success(contractResponse.getNftId());
             } else {
-                return NftMintClientResponse.failure(contractResponse.getErrorMessage());
+                return NftMintClientResponse.failure("블록체인 서버 응답 오류");
             }
             
         } catch (Exception e) {
@@ -201,10 +208,21 @@ public class NftService {
             ResponseEntity<ContractNftResponse> response = restTemplate.postForEntity(
                 url, entity, ContractNftResponse.class);
             
-            return response.getBody();
+            // HTTP 200 성공 응답만 반환 (실패는 예외로 처리됨)
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody();
+            } else {
+                return null;
+            }
             
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            // HTTP 4xx/5xx 오류는 예외로 처리됨
+            // 상태 코드 기반으로 실패 처리
+            logger.error("블록체인 서버 오류 응답: HTTP {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            return null;
         } catch (Exception e) {
-            return ContractNftResponse.failure("블록체인 서버 통신 오류: " + e.getMessage());
+            logger.error("블록체인 서버 통신 오류", e);
+            return null;
         }
     }
     
@@ -296,11 +314,10 @@ public class NftService {
             Optional<UserEquipItem> userEquipItemOpt = userEquipItemRepository.findByNftId(nftId);
             
             if (userEquipItemOpt.isPresent()) {
-                UserEquipItem userEquipItem = userEquipItemOpt.get();
-                
                 // 3. 소유권이 다르면 동기화 (userId -> profileId로 변경되어 이 부분은 더 이상 필요하지 않을 수 있음)
                 // UserEquipItem은 이제 profileId를 사용하므로 User의 기본 프로필 또는 특정 프로필로 동기화 필요
                 // 이 부분은 비즈니스 로직에 따라 재설계가 필요할 수 있습니다
+                // UserEquipItem userEquipItem = userEquipItemOpt.get(); // 추후 구현 시 사용
             } else {
                 // 4. NFT ID가 DB에 없으면 로그 기록 (새로 생성된 NFT일 수 있음)
                 System.out.println("Warning: NFT ID " + nftId + " not found in database for wallet " + walletAddress);
