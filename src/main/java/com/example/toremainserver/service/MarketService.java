@@ -2,6 +2,8 @@ package com.example.toremainserver.service;
 
 import com.example.toremainserver.dto.market.*;
 import com.example.toremainserver.entity.NFTSellOrder;
+import com.example.toremainserver.entity.UserEquipItem;
+import com.example.toremainserver.entity.ItemDefinition;
 import com.example.toremainserver.repository.NFTSellOrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,10 +45,46 @@ public class MarketService {
     }
     
     /**
-     * 활성 판매 주문 목록 조회 (ACTIVE + LOCKED 상태)
+     * 활성 판매 주문 목록 조회
+     * UserEquipItem과 ItemDefinition을 함께 조회하여 N+1 문제 방지
+     * @param status 조회할 상태 (예: "active", "locked", "completed", "cancelled", "all")
+     *               "active": ACTIVE + LOCKED 상태만 조회
+     *               기타: 해당 상태만 조회 (대소문자 무시)
+     * @return ActiveSellOrderResponse 리스트 (sellOrder, equipItem, itemDefinition 포함)
      */
-    public List<NFTSellOrder> getActiveSellOrders() {
-        return sellOrderRepository.findActiveOrders();
+    public List<ActiveSellOrderResponse> getActiveSellOrders(String status) {
+        List<String> statuses;
+        
+        if (status == null || status.equalsIgnoreCase("active") || status.equalsIgnoreCase("all")) {
+            // 기본값: ACTIVE + LOCKED
+            statuses = Arrays.asList("ACTIVE", "LOCKED");
+        } else {
+            // 특정 상태로 조회
+            String upperStatus = status.toUpperCase();
+            if (NFTSellOrder.OrderStatus.ACTIVE.name().equals(upperStatus) ||
+                NFTSellOrder.OrderStatus.LOCKED.name().equals(upperStatus) ||
+                NFTSellOrder.OrderStatus.COMPLETED.name().equals(upperStatus) ||
+                NFTSellOrder.OrderStatus.CANCELLED.name().equals(upperStatus)) {
+                statuses = Arrays.asList(upperStatus);
+            } else {
+                // 잘못된 상태값인 경우 기본값 사용
+                statuses = Arrays.asList("ACTIVE", "LOCKED");
+            }
+        }
+        
+        List<Object[]> results = sellOrderRepository.findOrdersWithItemInfoByStatuses(statuses);
+        
+        // 결과를 ActiveSellOrderResponse 리스트로 변환
+        // Object[] 배열: [NFTSellOrder, UserEquipItem, ItemDefinition]
+        return results.stream()
+            .map(result -> {
+                NFTSellOrder sellOrder = (NFTSellOrder) result[0];
+                UserEquipItem equipItem = (UserEquipItem) result[1];  // null 가능
+                ItemDefinition itemDefinition = (ItemDefinition) result[2];  // null 가능
+                
+                return new ActiveSellOrderResponse(sellOrder, equipItem, itemDefinition);
+            })
+            .collect(Collectors.toList());
     }
     
     /**

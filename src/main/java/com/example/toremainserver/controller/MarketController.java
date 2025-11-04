@@ -49,16 +49,12 @@ public class MarketController {
     /**
      * 활성 판매 주문 목록 조회
      * GET /sell-orders?status=active
+     * status 파라미터: "active" (ACTIVE + LOCKED), "locked", "completed", "cancelled", "all"
      */
     @GetMapping("/sell-orders")
     public ResponseEntity<Map<String, Object>> getActiveSellOrders(@RequestParam(defaultValue = "active") String status) {
         try {
-            List<NFTSellOrder> orders;
-            if ("active".equals(status)) {
-                orders = marketService.getActiveSellOrders();
-            } else {
-                orders = marketService.getActiveSellOrders(); // 기본값
-            }
+            List<ActiveSellOrderResponse> orders = marketService.getActiveSellOrders(status);
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);

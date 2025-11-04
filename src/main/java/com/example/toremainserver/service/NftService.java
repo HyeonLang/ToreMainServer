@@ -142,60 +142,24 @@ public class NftService {
         
         // NFT 메타데이터 표준 형식
         itemData.put("name", itemDefinition.getName());
+        
+        // 설명 추가
+        
         itemData.put("description", itemDefinition.getDescription());
         
-        // IPFS 이미지 URL (ipfs:// 형식으로 변환)
+        
+        // 아이템 타입 추가
+        itemData.put("type", itemDefinition.getType().name());
+        
+        // 이미지 URL 추가
         String ipfsImageUrl = itemDefinition.getIpfsImageUrl();
-        if (ipfsImageUrl != null && !ipfsImageUrl.trim().isEmpty()) {
-            // https://ipfs.io/ipfs/QmXXX/filename.png -> ipfs://QmXXX/filename.png
-            if (ipfsImageUrl.contains("/ipfs/")) {
-                String cidAndFile = ipfsImageUrl.substring(ipfsImageUrl.lastIndexOf("/ipfs/") + 6);
-                itemData.put("image", "ipfs://" + cidAndFile);
-            } else {
-                itemData.put("image", ipfsImageUrl);
-            }
-        } else {
-            // IPFS 이미지가 없으면 로컬 이미지 사용
-            String localImageUrl = itemDefinition.getImageUrl();
-            if (localImageUrl != null && !localImageUrl.trim().isEmpty()) {
-                itemData.put("image", localImageUrl);
-            }
-        }
-        
-        // External URL (게임 웹사이트)
-        itemData.put("external_url", "https://toregame.com/items/" + userEquipItem.getId());
-        
-        // Attributes 배열 생성
-        List<Map<String, Object>> attributes = new ArrayList<>();
-        
-        // base_stats를 attributes로 변환
+        itemData.put("image", ipfsImageUrl);
+
+        // base_stats를 gameData에 추가
         if (itemDefinition.getBaseStats() != null) {
-            for (Map.Entry<String, Object> entry : itemDefinition.getBaseStats().entrySet()) {
-                Map<String, Object> attribute = new HashMap<>();
-                attribute.put("trait_type", entry.getKey());
-                attribute.put("value", entry.getValue());
-                attributes.add(attribute);
-            }
+            itemData.put("baseStats", itemDefinition.getBaseStats());
         }
-        
-        // enhancement_data를 attributes로 변환
-        if (userEquipItem.getEnhancementData() != null) {
-            for (Map.Entry<String, Object> entry : userEquipItem.getEnhancementData().entrySet()) {
-                Map<String, Object> attribute = new HashMap<>();
-                attribute.put("trait_type", entry.getKey());
-                attribute.put("value", entry.getValue());
-                attributes.add(attribute);
-            }
-        }
-        
-        itemData.put("attributes", attributes);
-        
-        // Game data
-        Map<String, Object> gameData = new HashMap<>();
-        gameData.put("id", "item_" + userEquipItem.getId());
-        gameData.put("item_id", itemDefinition.getId().toString());
-        gameData.put("nft_id", userEquipItem.getNftId());
-        itemData.put("game_data", gameData);
+
         
         return itemData;
     }

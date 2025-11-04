@@ -14,7 +14,7 @@ VALUES
 (1, '체력 물약', 'CONSUMABLE', '{"health": 50, "duration": 0}', '체력을 50 회복시키는 물약입니다.', true, 99, '/uploads/items/health_potion.png', 'ipfs://bafkreieioitiq5xrkqzwupweupl4vitkeieww5e5nmlxttx2vmhpjnv4zq'),
 (2, '마나 물약', 'CONSUMABLE', '{"mana": 30, "duration": 0}', '마나를 30 회복시키는 물약입니다.', true, 99, '/uploads/items/mana_potion.png', 'ipfs://bafkreihr2a2irxvz3f5uvb4lxa7wmwvqeo2qfc3ezurihfxef2qtpf2l3m'),
 (3, '철검', 'EQUIPMENT', '{"attack": 15, "durability": 100}', '기본적인 철검입니다.', false, 1, '/uploads/items/iron_sword.png', 'ipfs://bafkreicqxmszqt2tcmf5aqqblokcs2uhem2e4mzbt7pvkjeiitjk5s3atu'),
-(4, '가죽 갑옷', 'EQUIPMENT', '{"health": 10, "durability": 80}', '가죽으로 만든 갑옷입니다.', false, 1, '/uploads/items/leather_armor.png', 'ipfs://https://bafkreidjnwybxkem2ghdhbwn23wopyldw376qfmd626quqb5zblyjummse');
+(4, '가죽 갑옷', 'EQUIPMENT', '{"health": 10, "durability": 80}', '가죽으로 만든 갑옷입니다.', false, 1, '/uploads/items/leather_armor.png', 'ipfs://bafkreidjnwybxkem2ghdhbwn23wopyldw376qfmd626quqb5zblyjummse');
 
 -- 사용자 소비 아이템 테이블 초기 데이터
 INSERT INTO user_consumable_items (profile_id, item_def_id, quantity) 
@@ -143,4 +143,10 @@ VALUES
     "speakingStyle": "호탕하고 시원시원한 말투. 웃음소리가 크며, 하하하!, 오호! 등의 감탄사를 자주 사용. 장인 특유의 자신감 있는 말투로, 자신의 작품에 대한 자부심이 말에서 드러남. 보석이나 금속에 대해 이야기할 때는 눈빛이 반짝이며 열정적으로 설명. 가끔 상술적인 면이 드러나지만 결국 정직하게 말함. 예: 하하하! 좋은 눈을 가졌군! 이 루비는 남쪽 광산에서 캐낸 최상품이야. 가격은 좀 나가지만, 평생 후회 없을 거야. 내가 직접 세공한 거니까! 어때, 한번 만져보겠나?",
     "persona": "발터는 30년 경력의 베테랑 보석 세공사다. 젊은 시절 광산 노동자로 일하다가 우연히 발견한 희귀 보석으로 인생이 바뀌었다. 그 보석을 팔아 얻은 돈으로 기술을 배웠고, 이제는 왕국에서 손꼽히는 장인이 되었다. 하지만 그는 화려한 왕궁보다 이 소박한 마을을 선택했다. 왕궁의 정치와 음모가 싫었고, 순수하게 자신의 기술에 몰두하고 싶었기 때문이다. 그는 보석과 금속의 가치를 누구보다 잘 알지만, 돈보다는 자신이 만든 작품의 완성도를 더 중요하게 여긴다. 그의 작업실에는 아직 완성하지 못한 걸작이 하나 있는데, 그것을 완성하기 위해서는 전설의 용의 심장이 필요하다고 한다. 그는 매일 그 작품을 보며 언젠가 완성할 날을 꿈꾼다. 또한 그는 마법 부여된 장신구를 만드는 기술도 갖고 있어, 모험가들에게 특별한 액세서리를 제작해주기도 한다."
 }');
+
+-- NFT 판매 주문 테이블 초기 데이터 (테스트용)
+INSERT INTO nft_sell_orders (order_id, seller, nft_contract, token_id, price, currency, nonce, deadline, signature, status, created_at) 
+VALUES 
+('test-order-001', '0xFF5530beBE63f97f6cC80193416f890d76d65661', '0x5FbDB2315678afecb367f032d93F642f64180aa3', '300000001', '1000000000000000000', 'ETH', 1, UNIX_TIMESTAMP(DATE_ADD(NOW(), INTERVAL 7 DAY)), '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12', 'ACTIVE', NOW()) 
+ON DUPLICATE KEY UPDATE updated_at = NOW();
 

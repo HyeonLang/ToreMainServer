@@ -25,6 +25,13 @@ public interface NFTSellOrderRepository extends JpaRepository<NFTSellOrder, Long
     @Query("SELECT s FROM NFTSellOrder s WHERE s.status IN ('ACTIVE', 'LOCKED') ORDER BY s.createdAt DESC")
     List<NFTSellOrder> findActiveOrders();
     
+    // 상태별 주문 조회 (UserEquipItem과 ItemDefinition 포함) - N+1 문제 방지
+    @Query("SELECT s, uei, id FROM NFTSellOrder s " +
+           "LEFT JOIN UserEquipItem uei ON uei.nftId = s.tokenId " +
+           "LEFT JOIN ItemDefinition id ON id.id = uei.itemDefId " +
+           "WHERE s.status IN :statuses ORDER BY s.createdAt DESC")
+    List<Object[]> findOrdersWithItemInfoByStatuses(@Param("statuses") List<String> statuses);
+    
     // 활성 주문 개수 조회 (성능 최적화)
     @Query("SELECT COUNT(s) FROM NFTSellOrder s WHERE s.status IN ('ACTIVE', 'LOCKED')")
     long countActiveOrders();
