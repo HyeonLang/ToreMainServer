@@ -2,6 +2,7 @@ package com.example.toremainserver.controller;
 
 import com.example.toremainserver.dto.item.EquipItemRequest;
 import com.example.toremainserver.dto.item.ConsumableItemRequest;
+import com.example.toremainserver.dto.item.UpdateLocationRequest;
 import com.example.toremainserver.entity.ItemDefinition;
 import com.example.toremainserver.entity.UserConsumableItem;
 import com.example.toremainserver.entity.UserEquipItem;
@@ -31,16 +32,30 @@ public class ItemController {
     }
     
     // 프로필별 소비 아이템 조회
-    @GetMapping("/consumable-items/{profileId}")
+    @GetMapping("/consumable-items/profile/{profileId}")
     public ResponseEntity<List<UserConsumableItem>> getConsumableItemsByProfileId(@PathVariable Long profileId) {
         List<UserConsumableItem> items = itemService.getConsumableItemsByProfileId(profileId);
         return ResponseEntity.ok(items);
     }
     
     // 프로필별 장비 아이템 조회
-    @GetMapping("/equip-items/{profileId}")
+    @GetMapping("/equip-items/profile/{profileId}")
     public ResponseEntity<List<UserEquipItem>> getEquipItemsByProfileId(@PathVariable Long profileId) {
         List<UserEquipItem> items = itemService.getEquipItemsByProfileId(profileId);
+        return ResponseEntity.ok(items);
+    }
+    
+    // userId로 유저의 모든 소비 아이템 조회
+    @GetMapping("/consumable-items/user/{userId}")
+    public ResponseEntity<List<UserConsumableItem>> getConsumableItemsByUserId(@PathVariable Long userId) {
+        List<UserConsumableItem> items = itemService.getConsumableItemsByUserId(userId);
+        return ResponseEntity.ok(items);
+    }
+    
+    // userId로 유저의 모든 장비 아이템 조회
+    @GetMapping("/equip-items/user/{userId}")
+    public ResponseEntity<List<UserEquipItem>> getEquipItemsByUserId(@PathVariable Long userId) {
+        List<UserEquipItem> items = itemService.getEquipItemsByUserId(userId);
         return ResponseEntity.ok(items);
     }
     
@@ -108,6 +123,20 @@ public class ItemController {
         try {
             itemService.removeEquipItemFromProfile(profileId, equipItemId);
             return ResponseEntity.ok(java.util.Map.of("message", "장비 아이템이 성공적으로 제거되었습니다"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+    
+    // 장비 아이템의 locationId 업데이트 (PATCH)
+    @PatchMapping("/equip-item/{equipItemId}/location")
+    public ResponseEntity<?> updateEquipItemLocation(
+        @PathVariable Long equipItemId,
+        @RequestBody UpdateLocationRequest request
+        ) {
+        try {
+            itemService.updateLocationId(equipItemId, request.getLocationId(), request.getProfileId());
+            return ResponseEntity.ok(java.util.Map.of("message", "locationId가 성공적으로 업데이트되었습니다"));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }

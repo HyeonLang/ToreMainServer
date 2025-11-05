@@ -29,3 +29,11 @@ CREATE TABLE IF NOT EXISTS nft_sell_orders (
     INDEX idx_status_deadline (status, deadline)
 );
 
+-- 아이템 위치 타입 테이블
+CREATE TABLE IF NOT EXISTS item_location_types (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code_name VARCHAR(50) UNIQUE NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    description TEXT
+);
+

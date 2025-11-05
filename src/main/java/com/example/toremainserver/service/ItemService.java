@@ -3,11 +3,14 @@ package com.example.toremainserver.service;
 import com.example.toremainserver.entity.ItemDefinition;
 import com.example.toremainserver.entity.UserConsumableItem;
 import com.example.toremainserver.entity.UserEquipItem;
+import com.example.toremainserver.entity.UserGameProfile;
 import com.example.toremainserver.repository.ItemDefinitionRepository;
 import com.example.toremainserver.repository.UserConsumableItemRepository;
 import com.example.toremainserver.repository.UserEquipItemRepository;
+import com.example.toremainserver.repository.UserGameProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,14 +22,17 @@ public class ItemService {
     private final ItemDefinitionRepository itemDefinitionRepository;
     private final UserConsumableItemRepository userConsumableItemRepository;
     private final UserEquipItemRepository userEquipItemRepository;
+    private final UserGameProfileRepository userGameProfileRepository;
     
     @Autowired
     public ItemService(ItemDefinitionRepository itemDefinitionRepository, 
                       UserConsumableItemRepository userConsumableItemRepository,
-                      UserEquipItemRepository userEquipItemRepository) {
+                      UserEquipItemRepository userEquipItemRepository,
+                      UserGameProfileRepository userGameProfileRepository) {
         this.itemDefinitionRepository = itemDefinitionRepository;
         this.userConsumableItemRepository = userConsumableItemRepository;
         this.userEquipItemRepository = userEquipItemRepository;
+        this.userGameProfileRepository = userGameProfileRepository;
     }
     
     // 프로필별 소비 아이템 조회
@@ -37,6 +43,42 @@ public class ItemService {
     // 프로필별 장비 아이템 조회
     public List<UserEquipItem> getEquipItemsByProfileId(Long profileId) {
         return userEquipItemRepository.findByProfileId(profileId);
+    }
+    
+    // userId로 해당 유저의 모든 소비 아이템 조회
+    public List<UserConsumableItem> getConsumableItemsByUserId(Long userId) {
+        // userId로 모든 프로필 조회
+        List<UserGameProfile> profiles = userGameProfileRepository.findByUserId(userId);
+        
+        if (profiles.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        
+        // 모든 profileId 추출
+        List<Long> profileIds = profiles.stream()
+            .map(UserGameProfile::getId)
+            .collect(java.util.stream.Collectors.toList());
+        
+        // profileId 리스트로 소비 아이템 조회
+        return userConsumableItemRepository.findByProfileIdIn(profileIds);
+    }
+    
+    // userId로 해당 유저의 모든 장비 아이템 조회
+    public List<UserEquipItem> getEquipItemsByUserId(Long userId) {
+        // userId로 모든 프로필 조회
+        List<UserGameProfile> profiles = userGameProfileRepository.findByUserId(userId);
+        
+        if (profiles.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        
+        // 모든 profileId 추출
+        List<Long> profileIds = profiles.stream()
+            .map(UserGameProfile::getId)
+            .collect(java.util.stream.Collectors.toList());
+        
+        // profileId 리스트로 장비 아이템 조회
+        return userEquipItemRepository.findByProfileIdIn(profileIds);
     }
     
     // 아이템 정의 조회
@@ -133,5 +175,43 @@ public class ItemService {
         }
         
         userEquipItemRepository.delete(userItem);
+    }
+    
+    // 장비 아이템의 locationId 업데이트 (전용 쿼리 사용)
+    @Transactional
+    public void updateLocationId(Long equipItemId, Integer locationId, Long profileId) {
+        // 아이템 존재 여부 확인
+        Optional<UserEquipItem> userItemOptional = userEquipItemRepository.findById(equipItemId);
+        if (userItemOptional.isEmpty()) {
+            throw new RuntimeException("해당 장비 아이템을 찾을 수 없습니다.");
+        }
+        
+        UserEquipItem userItem = userItemOptional.get();
+        
+        // locationId 유효성 검증 (1: PERSONAL_INV, 2: ACCOUNT_WH, 3: ON_CHAIN)
+        if (locationId == null || locationId < 1 || locationId > 3) {
+            throw new RuntimeException("유효하지 않은 locationId입니다. (1: 개인 인벤토리, 2: 계정 창고, 3: 블록체인)");
+        }
+        
+        // profileId가 제공되고 현재 값과 다르면 함께 업데이트
+        if (profileId != null && !profileId.equals(userItem.getProfileId())) {
+            // UserGameProfile 존재 여부 확인 (외래키 검증)
+            Optional<UserGameProfile> profileOptional = userGameProfileRepository.findById(profileId);
+            if (profileOptional.isEmpty()) {
+                throw new RuntimeException("해당 프로필을 찾을 수 없습니다. (profileId: " + profileId + ")");
+            }
+            
+            // locationId와 profileId 함께 업데이트
+            int updated = userEquipItemRepository.updateLocationIdAndProfileId(equipItemId, locationId, profileId);
+            if (updated == 0) {
+                throw new RuntimeException("locationId와 profileId 업데이트에 실패했습니다.");
+            }
+        } else {
+            // profileId가 제공되지 않았거나 같으면 locationId만 업데이트
+            int updated = userEquipItemRepository.updateLocationId(equipItemId, locationId);
+            if (updated == 0) {
+                throw new RuntimeException("locationId 업데이트에 실패했습니다.");
+            }
+        }
     }
 } 

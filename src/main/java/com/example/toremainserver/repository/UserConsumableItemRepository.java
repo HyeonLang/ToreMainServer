@@ -14,6 +14,9 @@ public interface UserConsumableItemRepository extends JpaRepository<UserConsumab
     // 프로필별 소비 아이템 조회
     List<UserConsumableItem> findByProfileId(Long profileId);
     
+    // 여러 프로필 ID로 소비 아이템 조회
+    List<UserConsumableItem> findByProfileIdIn(List<Long> profileIds);
+    
     // 프로필과 아이템 정의 ID로 조회
     Optional<UserConsumableItem> findByProfileIdAndItemDefId(Long profileId, Long itemDefId);
     

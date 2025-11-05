@@ -2,6 +2,7 @@ package com.example.toremainserver.repository;
 
 import com.example.toremainserver.entity.UserEquipItem;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -14,6 +15,9 @@ public interface UserEquipItemRepository extends JpaRepository<UserEquipItem, Lo
     
     // 프로필별 장비 아이템 조회
     List<UserEquipItem> findByProfileId(Long profileId);
+    
+    // 여러 프로필 ID로 장비 아이템 조회
+    List<UserEquipItem> findByProfileIdIn(List<Long> profileIds);
     
     // 프로필과 아이템 정의 ID로 조회
     List<UserEquipItem> findByProfileIdAndItemDefId(Long profileId, Long itemDefId);
@@ -38,6 +42,16 @@ public interface UserEquipItemRepository extends JpaRepository<UserEquipItem, Lo
     // 프로필 ID로 NFT화된 아이템 조회
     @Query("SELECT uei FROM UserEquipItem uei WHERE uei.profileId = :profileId AND uei.nftId IS NOT NULL")
     List<UserEquipItem> findNftItemsByProfileId(@Param("profileId") Long profileId);
+    
+    // locationId만 업데이트 (전용 쿼리 - 성능 최적화)
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE UserEquipItem uei SET uei.locationId = :locationId WHERE uei.id = :id")
+    int updateLocationId(@Param("id") Long id, @Param("locationId") Integer locationId);
+    
+    // locationId와 profileId 함께 업데이트 (전용 쿼리 - 성능 최적화)
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE UserEquipItem uei SET uei.locationId = :locationId, uei.profileId = :profileId WHERE uei.id = :id")
+    int updateLocationIdAndProfileId(@Param("id") Long id, @Param("locationId") Integer locationId, @Param("profileId") Long profileId);
     
     // 참고: 기본 제공 메서드
     // - Optional<UserEquipItem> findById(Long id)         // PK로 단일 장비 조회

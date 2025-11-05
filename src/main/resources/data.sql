@@ -1,5 +1,7 @@
 -- 사용자 테이블 초기 데이터
-INSERT INTO users (username, password, playername, wallet_address, created_at, updated_at) VALUES ('admin', 'password', '관리자', '0xFF5530beBE63f97f6cC80193416f890d76d65661', NOW(), NOW()) ON DUPLICATE KEY UPDATE updated_at = NOW();
+INSERT INTO users (username, password, playername, wallet_address, created_at, updated_at)
+VALUES
+    ('admin', 'password', '관리자', '0xFF5530beBE63f97f6cC80193416f890d76d65661', NOW(), NOW()) ON DUPLICATE KEY UPDATE updated_at = NOW();
 
 -- 게임 프로필 테이블 초기 데이터 (userId: 1 - admin)
 INSERT INTO user_game_profiles (user_id, profile_name, level, experience, gold, equipped_items, skill_info, created_at, updated_at, version)
@@ -7,6 +9,14 @@ VALUES
 (1, '메인 캐릭터', 10, 9200, 1500, '{"weapon": 1, "armor": 2, "accessory": 3}', '{"fireball": 3, "heal": 2, "shield": 1}', NOW(), NOW(), 0),
 (1, '서브 캐릭터', 5, 4100, 500, '{"weapon": 4}', '{"lightning": 2}', NOW(), NOW(), 0),
 (1, 'PVP 전용', 15, 14300, 3000, '{"weapon": 1, "armor": 2, "helmet": 5, "boots": 6}', '{"fireball": 5, "ice_storm": 4, "blink": 3}', NOW(), NOW(), 0);
+
+-- 아이템 위치 타입 테이블 초기 데이터
+INSERT INTO item_location_types (id, code_name, display_name, description) 
+VALUES 
+(1, 'PERSONAL_INV', '개인 인벤토리', '플레이어의 개인 인벤토리에 저장된 아이템'),
+(2, 'ACCOUNT_WH', '계정 창고', '계정 전체에서 공유되는 창고에 저장된 아이템'),
+(3, 'ON_CHAIN', '블록체인', '블록체인에 저장되어 인게임에서 보이지 않는 NFT 상태')
+ON DUPLICATE KEY UPDATE display_name = VALUES(display_name), description = VALUES(description);
 
 -- 아이템 정의 테이블 초기 데이터
 INSERT INTO item_definitions (item_id, name, type, base_stats, description, is_stackable, max_stack, image_url, ipfs_image_url) 
@@ -23,12 +33,12 @@ VALUES
 (1, 2, 5);  -- 메인 캐릭터가 마나 물약 5개
 
 -- 사용자 장비 아이템 테이블 초기 데이터
-INSERT INTO user_equip_items (profile_id, item_def_id, enhancement_data, nft_id) 
+INSERT INTO user_equip_items (profile_id, item_def_id, location_id, enhancement_data, nft_id) 
 VALUES 
-(1, 3, '{"star": 1, "attack" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 1)
-(1, 4, '{"star": 1, "health" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 가죽 갑옷 (level 1)
-(1, 3, '{"star": 2, "attack" : 13, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 2)
-(1, 4, '{"star": 2, "health" : 9, "enhancement": 0}', NULL); -- 메인 캐릭터의 가죽 갑옷 (level 2)
+(1, 3, 1, '{"star": 1, "attack" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 1)
+(1, 4, 1, '{"star": 1, "health" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 가죽 갑옷 (level 1)
+(1, 3, 1, '{"star": 2, "attack" : 13, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 2)
+(1, 4, 1, '{"star": 2, "health" : 9, "enhancement": 0}', NULL); -- 메인 캐릭터의 가죽 갑옷 (level 2)
 
 -- NPC 테이블 초기 데이터
 INSERT INTO npcs (npc_id, name, npc_info) 

@@ -19,11 +19,14 @@ public class UserEquipItem {
     @Column(name = "id")
     private Long id;  // 단일 PK (equipItemId로 사용)
     
-    @Column(name = "profile_id", nullable = false)
-    private Long profileId;
+    @Column(name = "profile_id", nullable = true)
+    private Long profileId;  // UserGameProfile.id 참조 (nullable - 프로필이 없을 수 있음)
     
     @Column(name = "item_def_id", nullable = false)
     private Long itemDefId;  // ItemDefinition.id 참조
+    
+    @Column(name = "location_id", nullable = false)
+    private Integer locationId;  // ItemLocationType.id 참조
     
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "enhancement_data", columnDefinition = "JSON")
@@ -39,12 +42,14 @@ public class UserEquipItem {
     public UserEquipItem(Long profileId, Long itemDefId) {
         this.profileId = profileId;
         this.itemDefId = itemDefId;
+        this.locationId = 1; // 기본값 1
     }
     
     public UserEquipItem(Long profileId, Long itemDefId, Map<String, Object> enhancementData) {
         this.profileId = profileId;
         this.itemDefId = itemDefId;
         this.enhancementData = enhancementData;
+        this.locationId = 1; // 기본값 1
     }
     
     public UserEquipItem(Long profileId, Long itemDefId, Map<String, Object> enhancementData, String nftId) {
@@ -52,6 +57,15 @@ public class UserEquipItem {
         this.itemDefId = itemDefId;
         this.enhancementData = enhancementData;
         this.nftId = nftId;
+        this.locationId = 1; // 기본값 1
+    }
+
+    public UserEquipItem(Long profileId, Long itemDefId, Map<String, Object> enhancementData, String nftId, Integer locationId) {
+        this.profileId = profileId;
+        this.itemDefId = itemDefId;
+        this.enhancementData = enhancementData;
+        this.nftId = nftId;
+        this.locationId = locationId;
     }
     
     // Getter와 Setter
@@ -77,6 +91,14 @@ public class UserEquipItem {
     
     public void setItemDefId(Long itemDefId) {
         this.itemDefId = itemDefId;
+    }
+    
+    public Integer getLocationId() {
+        return locationId;
+    }
+    
+    public void setLocationId(Integer locationId) {
+        this.locationId = locationId;
     }
     
     public Map<String, Object> getEnhancementData() {

@@ -125,6 +125,8 @@ public class NftService {
             if (contractResponse != null && contractResponse.isSuccess()) {
                 // 10. 성공 시 UserEquipItem에 NFT ID 업데이트
                 userEquipItem.setNftId(contractResponse.getNftId());
+                userEquipItem.setLocationId(0);
+                userEquipItem.setProfileId(null);
                 userEquipItemRepository.save(userEquipItem);
                 
                 return NftMintClientResponse.success(contractResponse.getNftId());
