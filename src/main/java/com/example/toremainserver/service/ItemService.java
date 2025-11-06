@@ -65,20 +65,8 @@ public class ItemService {
     
     // userId로 해당 유저의 모든 장비 아이템 조회
     public List<UserEquipItem> getEquipItemsByUserId(Long userId) {
-        // userId로 모든 프로필 조회
-        List<UserGameProfile> profiles = userGameProfileRepository.findByUserId(userId);
-        
-        if (profiles.isEmpty()) {
-            return java.util.Collections.emptyList();
-        }
-        
-        // 모든 profileId 추출
-        List<Long> profileIds = profiles.stream()
-            .map(UserGameProfile::getId)
-            .collect(java.util.stream.Collectors.toList());
-        
-        // profileId 리스트로 장비 아이템 조회
-        return userEquipItemRepository.findByProfileIdIn(profileIds);
+        // userId로 직접 조회 (join 없이)
+        return userEquipItemRepository.findByUserId(userId);
     }
     
     // 아이템 정의 조회
@@ -121,8 +109,15 @@ public class ItemService {
             throw new RuntimeException("아이템 정의를 찾을 수 없습니다.");
         }
         
-        // 단일 PK(id) 자동 생성
-        UserEquipItem userItem = new UserEquipItem(profileId, itemDefId, enhancementData, null);
+        // 프로필로 userId 조회
+        Optional<UserGameProfile> profileOptional = userGameProfileRepository.findById(profileId);
+        if (profileOptional.isEmpty()) {
+            throw new RuntimeException("프로필을 찾을 수 없습니다.");
+        }
+        Long userId = profileOptional.get().getUserId();
+        
+        // 단일 PK(id) 자동 생성, userId도 함께 설정
+        UserEquipItem userItem = new UserEquipItem(profileId, userId, itemDefId, enhancementData);
         return userEquipItemRepository.save(userItem);
     }
     

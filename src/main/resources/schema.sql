@@ -37,3 +37,14 @@ CREATE TABLE IF NOT EXISTS item_location_types (
     description TEXT
 );
 
+-- user_equip_items 테이블에 user_id 외래키 제약조건 추가
+-- 참고: JPA가 테이블을 자동 생성하는 경우(ddl-auto=create-drop), 외래키는 자동 생성되지 않을 수 있음
+-- 운영 환경에서는 마이그레이션 도구(Flyway, Liquibase 등)를 사용하여 외래키를 추가하는 것을 권장
+-- 다음 SQL은 외래키가 이미 존재하지 않는 경우에만 실행됨 (수동 실행 필요)
+/*
+ALTER TABLE user_equip_items 
+ADD CONSTRAINT fk_user_equip_item_user 
+FOREIGN KEY (user_id) REFERENCES users(id) 
+ON DELETE SET NULL ON UPDATE CASCADE;
+*/
+

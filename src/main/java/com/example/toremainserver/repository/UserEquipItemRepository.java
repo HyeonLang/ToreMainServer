@@ -16,6 +16,9 @@ public interface UserEquipItemRepository extends JpaRepository<UserEquipItem, Lo
     // 프로필별 장비 아이템 조회
     List<UserEquipItem> findByProfileId(Long profileId);
     
+    // userId로 장비 아이템 조회
+    List<UserEquipItem> findByUserId(Long userId);
+    
     // 여러 프로필 ID로 장비 아이템 조회
     List<UserEquipItem> findByProfileIdIn(List<Long> profileIds);
     
@@ -32,10 +35,14 @@ public interface UserEquipItemRepository extends JpaRepository<UserEquipItem, Lo
     // 프로필별 특정 아이템 정의 개수 조회
     Long countByProfileIdAndItemDefId(Long profileId, Long itemDefId);
     
+    // userId로 NFT화된 아이템 조회 (nftId가 null이 아닌 것들)
+    @Query("SELECT uei FROM UserEquipItem uei WHERE uei.userId = :userId AND uei.nftId IS NOT NULL")
+    List<UserEquipItem> findNftItemsByUserId(@Param("userId") Long userId);
+    
     // 지갑 주소로 NFT화된 아이템 조회 (nftId가 null이 아닌 것들)
+    // userId를 통해 직접 조회 (더 효율적)
     @Query("SELECT uei FROM UserEquipItem uei " +
-           "JOIN UserGameProfile ugp ON uei.profileId = ugp.id " +
-           "JOIN User u ON ugp.userId = u.id " +
+           "JOIN User u ON uei.userId = u.id " +
            "WHERE u.walletAddress = :walletAddress AND uei.nftId IS NOT NULL")
     List<UserEquipItem> findNftItemsByWalletAddress(@Param("walletAddress") String walletAddress);
     
