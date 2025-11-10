@@ -60,6 +60,11 @@ public interface UserEquipItemRepository extends JpaRepository<UserEquipItem, Lo
     @Query("UPDATE UserEquipItem uei SET uei.locationId = :locationId, uei.profileId = :profileId WHERE uei.id = :id")
     int updateLocationIdAndProfileId(@Param("id") Long id, @Param("locationId") Integer locationId, @Param("profileId") Long profileId);
     
+    // locationId 업데이트하고 profileId를 null로 설정 (네이티브 쿼리 사용 - NULL 설정 보장)
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE user_equip_items SET location_id = :locationId, profile_id = NULL WHERE id = :id", nativeQuery = true)
+    int updateLocationIdAndSetProfileIdToNull(@Param("id") Long id, @Param("locationId") Integer locationId);
+    
     // 참고: 기본 제공 메서드
     // - Optional<UserEquipItem> findById(Long id)         // PK로 단일 장비 조회
     // - List<UserEquipItem> findByProfileId(Long profileId)     // 프로필의 모든 장비

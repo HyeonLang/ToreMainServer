@@ -203,7 +203,7 @@ public class ItemService {
             }
         } else {
             // profileId가 제공되지 않았거나 같으면 locationId만 업데이트
-            int updated = userEquipItemRepository.updateLocationId(equipItemId, locationId);
+            int updated = userEquipItemRepository.updateLocationIdAndSetProfileIdToNull(equipItemId, locationId);
             if (updated == 0) {
                 throw new RuntimeException("locationId 업데이트에 실패했습니다.");
             }
