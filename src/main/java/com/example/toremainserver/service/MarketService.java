@@ -1,6 +1,6 @@
 package com.example.toremainserver.service;
 
-import com.example.toremainserver.dto.market.*;
+import com.example.toremainserver.dto.market.MarketStatsResponse;
 import com.example.toremainserver.entity.NFTSellOrder;
 import com.example.toremainserver.entity.UserEquipItem;
 import com.example.toremainserver.entity.ItemDefinition;
@@ -21,28 +21,6 @@ public class MarketService {
     
     
     // ==================== 판매 주문 관련 메서드 ====================
-    
-    /**
-     * 판매 주문 생성
-     */
-    public NFTSellOrder createSellOrder(CreateSellOrderRequest request) {
-        // 주문 ID 생성 (UUID 사용)
-        String orderId = UUID.randomUUID().toString();
-        
-        NFTSellOrder sellOrder = new NFTSellOrder(
-            orderId,
-            request.getSeller(),
-            request.getNftContract(),
-            request.getTokenId(),
-            request.getPrice(),
-            request.getCurrency(),
-            request.getNonce(),
-            request.getDeadline(),
-            request.getSignature()
-        );
-        
-        return sellOrderRepository.save(sellOrder);
-    }
     
     /**
      * 활성 판매 주문 목록 조회
@@ -236,43 +214,6 @@ public class MarketService {
         sellOrderRepository.save(order);
     }
     
-    /**
-     * 오프체인 서명 데이터 조회
-     */
-    public OffchainSignatureDataResponse getOffchainSignatureData(String orderId) {
-        Optional<NFTSellOrder> optionalOrder = sellOrderRepository.findByOrderId(orderId);
-        if (optionalOrder.isEmpty()) {
-            throw new RuntimeException("판매 주문을 찾을 수 없습니다: " + orderId);
-        }
-        
-        NFTSellOrder order = optionalOrder.get();
-        
-        // EIP-712 도메인 정보 (실제 환경에서는 설정에서 가져와야 함)
-        OffchainSignatureDataResponse.Domain domain = new OffchainSignatureDataResponse.Domain(
-            "NFTMarketplace",
-            "1",
-            1, // 체인 ID
-            "0x..." // 컨트랙트 주소
-        );
-        
-        // 타입 정의 (실제로는 EIP-712 표준에 맞게 구성)
-        Map<String, Object> types = new HashMap<>();
-        types.put("EIP712Domain", Arrays.asList(
-            Map.of("name", "string", "type", "name"),
-            Map.of("name", "string", "type", "version"),
-            Map.of("name", "uint256", "type", "chainId"),
-            Map.of("name", "address", "type", "verifyingContract")
-        ));
-        
-        return new OffchainSignatureDataResponse(
-            order,
-            order.getSignature(),
-            "0x...", // 메시지 해시 (실제로는 계산해야 함)
-            domain,
-            types
-        );
-    }
-    
     // ==================== 통계 및 분석 메서드 ====================
     
     /**
@@ -290,16 +231,6 @@ public class MarketService {
             totalVolume != null ? totalVolume : "0",
             averagePrice != null ? averagePrice : "0"
         );
-    }
-    
-    /**
-     * 인기 NFT 조회
-     */
-    public List<NFTSellOrder> getPopularNFTs(int limit) {
-        return sellOrderRepository.findPopularActiveNFTs()
-                .stream()
-                .limit(limit)
-                .collect(Collectors.toList());
     }
     
     // ==================== 검색 및 필터링 메서드 ====================

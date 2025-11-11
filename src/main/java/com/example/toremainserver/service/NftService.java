@@ -4,14 +4,18 @@ import com.example.toremainserver.dto.nft.NftMintClientRequest;
 import com.example.toremainserver.dto.nft.NftMintClientResponse;
 import com.example.toremainserver.dto.nft.ContractNftRequest;
 import com.example.toremainserver.dto.nft.ContractNftResponse;
-import com.example.toremainserver.dto.nft.NftBurnClientRequest;
-import com.example.toremainserver.dto.nft.NftBurnClientResponse;
-import com.example.toremainserver.dto.nft.ContractNftBurnRequest;
-import com.example.toremainserver.dto.nft.ContractNftBurnResponse;
 import com.example.toremainserver.dto.nft.NftListClientRequest;
 import com.example.toremainserver.dto.nft.NftListClientResponse;
 import com.example.toremainserver.dto.nft.ContractNftListRequest;
 import com.example.toremainserver.dto.nft.ContractNftListResponse;
+import com.example.toremainserver.dto.nft.NftLockUpRequest;
+import com.example.toremainserver.dto.nft.NftLockUpResponse;
+import com.example.toremainserver.dto.nft.NftUnlockUpRequest;
+import com.example.toremainserver.dto.nft.NftUnlockUpResponse;
+import com.example.toremainserver.dto.nft.ContractNftLockUpRequest;
+import com.example.toremainserver.dto.nft.ContractNftLockUpResponse;
+import com.example.toremainserver.dto.nft.ContractNftUnlockUpRequest;
+import com.example.toremainserver.dto.nft.ContractNftUnlockUpResponse;
 import com.example.toremainserver.dto.item.ItemData;
 import com.example.toremainserver.entity.ItemDefinition;
 import com.example.toremainserver.entity.User;
@@ -196,53 +200,6 @@ public class NftService {
         }
     }
     
-    public NftBurnClientResponse burnNft(NftBurnClientRequest request) {
-        try {
-            // 1. 블록체인 서버로 burn 요청 전송
-            ContractNftBurnRequest contractRequest = new ContractNftBurnRequest(
-                request.getUserAddress(),
-                request.getTokenId(),
-                request.getContractAddress()
-            );
-            
-            ContractNftBurnResponse contractResponse = sendBurnToBlockchainServer(contractRequest);
-            
-            if (contractResponse.isSuccess()) {
-                // 2. 성공 시 데이터베이스에서 해당 NFT ID를 가진 UserEquipItem 찾아서 NFT ID 제거
-                List<UserEquipItem> nftItems = userEquipItemRepository.findAllByNftId(request.getTokenId());
-                for (UserEquipItem item : nftItems) {
-                    item.setNftId(null);
-                    userEquipItemRepository.save(item);
-                }
-                
-                return new NftBurnClientResponse(true);
-            } else {
-                return new NftBurnClientResponse(false, contractResponse.getErrorMessage());
-            }
-            
-        } catch (Exception e) {
-            return new NftBurnClientResponse(false, "NFT burn 중 오류가 발생했습니다: " + e.getMessage());
-        }
-    }
-    
-    private ContractNftBurnResponse sendBurnToBlockchainServer(ContractNftBurnRequest request) {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            
-            HttpEntity<ContractNftBurnRequest> entity = new HttpEntity<>(request, headers);
-            
-            String url = blockchainServerUrl + "/api/blockchain/nft/burn";
-            ResponseEntity<ContractNftBurnResponse> response = restTemplate.postForEntity(
-                url, entity, ContractNftBurnResponse.class);
-            
-            return response.getBody();
-            
-        } catch (Exception e) {
-            return new ContractNftBurnResponse(false, "블록체인 서버 통신 오류: " + e.getMessage());
-        }
-    }
-    
     private ContractNftListResponse getNftListFromBlockchainServer(ContractNftListRequest request) {
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -365,27 +322,172 @@ public class NftService {
     }
     
     /**
-     * 지갑 주소로 NFT화된 아이템 목록 조회 (메타데이터 형식)
-     */
-    public List<Map<String, Object>> getUserNftItems(String walletAddress) {
-        List<UserEquipItem> nftItems = userEquipItemRepository.findNftItemsByWalletAddress(walletAddress);
-        List<Map<String, Object>> metadataList = new ArrayList<>();
-        
-        for (UserEquipItem userEquipItem : nftItems) {
-            ItemDefinition itemDefinition = itemDefinitionRepository.findById(userEquipItem.getItemDefId())
-                .orElseThrow(() -> new RuntimeException("ItemDefinition not found: " + userEquipItem.getItemDefId()));
-            
-            Map<String, Object> metadata = createItemData(itemDefinition, userEquipItem);
-            metadataList.add(metadata);
-        }
-        
-        return metadataList;
-    }
-    
-    /**
      * 프로필 ID로 NFT화된 아이템 목록 조회
      */
     public List<UserEquipItem> getUserNftItemsByProfileId(Long profileId) {
         return userEquipItemRepository.findNftItemsByProfileId(profileId);
+    }
+    
+    /**
+     * NFT를 lockUp (계정 창고로 이동)
+     * 
+     * @param request lockUp 요청 (userId, equipItemId)
+     * @return lockUp 결과
+     */
+    public NftLockUpResponse lockUpNft(NftLockUpRequest request) {
+        try {
+            // 1. 사용자 정보 조회
+            User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + request.getUserId()));
+            
+            if (user.getWalletAddress() == null || user.getWalletAddress().isEmpty()) {
+                return NftLockUpResponse.failure("사용자의 지갑 주소가 설정되지 않았습니다");
+            }
+            
+            // 2. UserEquipItem 조회
+            UserEquipItem userEquipItem = userEquipItemRepository.findById(request.getEquipItemId())
+                .orElseThrow(() -> new RuntimeException("장비 아이템을 찾을 수 없습니다: " + request.getEquipItemId()));
+            
+            // 3. NFT ID 확인
+            if (userEquipItem.getNftId() == null || userEquipItem.getNftId().isEmpty()) {
+                return NftLockUpResponse.failure("NFT화되지 않은 아이템입니다");
+            }
+            
+            // 4. 블록체인 서버로 lockUp 요청 전송
+            ContractNftLockUpRequest contractRequest = new ContractNftLockUpRequest(
+                user.getWalletAddress(),
+                userEquipItem.getNftId(),
+                contractAddress
+            );
+            
+            ContractNftLockUpResponse contractResponse = sendLockUpToBlockchainServer(contractRequest);
+            
+            if (contractResponse != null && contractResponse.isSuccess()) {
+                // 5. 성공 시 DB 갱신: userId 업데이트, locationId를 2(계정창고)로 설정
+                userEquipItem.setUserId(request.getUserId());
+                userEquipItem.setLocationId(2);
+                userEquipItemRepository.save(userEquipItem);
+                
+                return NftLockUpResponse.success();
+            } else {
+                String errorMsg = contractResponse != null ? contractResponse.getErrorMessage() : "블록체인 서버 통신 오류";
+                return NftLockUpResponse.failure(errorMsg);
+            }
+            
+        } catch (Exception e) {
+            return NftLockUpResponse.failure("NFT lockUp 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * NFT를 unlockUp (블록체인으로 이동)
+     * 
+     * @param request unlockUp 요청 (userId, nftId)
+     * @return unlockUp 결과
+     */
+    public NftUnlockUpResponse unlockUpNft(NftUnlockUpRequest request) {
+        try {
+            // 1. 사용자 정보 조회
+            User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + request.getUserId()));
+            
+            if (user.getWalletAddress() == null || user.getWalletAddress().isEmpty()) {
+                return NftUnlockUpResponse.failure("사용자의 지갑 주소가 설정되지 않았습니다");
+            }
+            
+            // 2. NFT ID로 UserEquipItem 조회
+            Optional<UserEquipItem> userEquipItemOpt = userEquipItemRepository.findByNftId(request.getNftId());
+            if (userEquipItemOpt.isEmpty()) {
+                return NftUnlockUpResponse.failure("NFT ID에 해당하는 아이템을 찾을 수 없습니다: " + request.getNftId());
+            }
+            
+            UserEquipItem userEquipItem = userEquipItemOpt.get();
+            
+            // 3. 소유권 검증
+            if (!user.getId().equals(userEquipItem.getUserId())) {
+                return NftUnlockUpResponse.failure("해당 NFT에 대한 소유권이 없습니다");
+            }
+            
+            // 4. 블록체인 서버로 unlockUp 요청 전송
+            ContractNftUnlockUpRequest contractRequest = new ContractNftUnlockUpRequest(
+                user.getWalletAddress(),
+                request.getNftId(),
+                contractAddress
+            );
+            
+            ContractNftUnlockUpResponse contractResponse = sendUnlockUpToBlockchainServer(contractRequest);
+            
+            if (contractResponse != null && contractResponse.isSuccess()) {
+                // 5. 성공 시 DB 갱신: locationId를 3(블록체인)으로 설정
+                userEquipItem.setLocationId(3);
+                userEquipItemRepository.save(userEquipItem);
+                
+                return NftUnlockUpResponse.success();
+            } else {
+                String errorMsg = contractResponse != null ? contractResponse.getErrorMessage() : "블록체인 서버 통신 오류";
+                return NftUnlockUpResponse.failure(errorMsg);
+            }
+            
+        } catch (Exception e) {
+            return NftUnlockUpResponse.failure("NFT unlockUp 중 오류가 발생했습니다: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 블록체인 서버로 lockUp 요청 전송
+     */
+    private ContractNftLockUpResponse sendLockUpToBlockchainServer(ContractNftLockUpRequest request) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            HttpEntity<ContractNftLockUpRequest> entity = new HttpEntity<>(request, headers);
+            
+            String url = blockchainServerUrl + "/api/blockchain/nft/lockup";
+            ResponseEntity<ContractNftLockUpResponse> response = restTemplate.postForEntity(
+                url, entity, ContractNftLockUpResponse.class);
+            
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody();
+            } else {
+                return new ContractNftLockUpResponse(false, "블록체인 서버 오류 응답");
+            }
+            
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            logger.error("블록체인 서버 오류 응답: HTTP {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            return new ContractNftLockUpResponse(false, "블록체인 서버 오류: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("블록체인 서버 통신 오류", e);
+            return new ContractNftLockUpResponse(false, "블록체인 서버 통신 오류: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 블록체인 서버로 unlockUp 요청 전송
+     */
+    private ContractNftUnlockUpResponse sendUnlockUpToBlockchainServer(ContractNftUnlockUpRequest request) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            HttpEntity<ContractNftUnlockUpRequest> entity = new HttpEntity<>(request, headers);
+            
+            String url = blockchainServerUrl + "/api/blockchain/nft/unlockup";
+            ResponseEntity<ContractNftUnlockUpResponse> response = restTemplate.postForEntity(
+                url, entity, ContractNftUnlockUpResponse.class);
+            
+            if (response.getStatusCode().is2xxSuccessful()) {
+                return response.getBody();
+            } else {
+                return new ContractNftUnlockUpResponse(false, "블록체인 서버 오류 응답");
+            }
+            
+        } catch (org.springframework.web.client.HttpStatusCodeException e) {
+            logger.error("블록체인 서버 오류 응답: HTTP {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            return new ContractNftUnlockUpResponse(false, "블록체인 서버 오류: " + e.getMessage());
+        } catch (Exception e) {
+            logger.error("블록체인 서버 통신 오류", e);
+            return new ContractNftUnlockUpResponse(false, "블록체인 서버 통신 오류: " + e.getMessage());
+        }
     }
 }

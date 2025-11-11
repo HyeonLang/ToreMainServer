@@ -29,14 +29,8 @@ public class NFTSellOrder {
     @Column(name = "currency", nullable = false)
     private String currency; // 결제 통화 (예: ETH, USDT 등)
     
-    @Column(name = "nonce", nullable = false)
-    private Long nonce; // 서명을 위한 논스값 (중복 방지)
-    
-    @Column(name = "deadline", nullable = false)
-    private Long deadline; // 주문 만료 시간 (Unix 타임스탬프)
-    
-    @Column(name = "signature", nullable = false, columnDefinition = "TEXT")
-    private String signature; // 판매자의 디지털 서명
+    @Column(name = "vault_address", nullable = false)
+    private String vaultAddress; // 중앙 관리 vault 지갑 주소
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -47,12 +41,6 @@ public class NFTSellOrder {
     
     @Column(name = "matched_at")
     private Long matchedAt; // 매칭된 시간 (Unix 타임스탬프)
-    
-    @Column(name = "locked_by")
-    private String lockedBy; // 주문을 락한 사용자 (구매 진행 중 중복 방지)
-    
-    @Column(name = "locked_at")
-    private Long lockedAt; // 락된 시간 (Unix 타임스탬프)
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt; // 주문 생성 시간
@@ -68,7 +56,7 @@ public class NFTSellOrder {
     
     // 생성자
     public NFTSellOrder(String orderId, String seller, String nftContract, String tokenId,
-                       String price, String currency, Long nonce, Long deadline, String signature) {
+                       String price, String currency, String vaultAddress) {
         this();
         this.orderId = orderId;
         this.seller = seller;
@@ -76,9 +64,7 @@ public class NFTSellOrder {
         this.tokenId = tokenId;
         this.price = price;
         this.currency = currency;
-        this.nonce = nonce;
-        this.deadline = deadline;
-        this.signature = signature;
+        this.vaultAddress = vaultAddress;
     }
     
     @PreUpdate
@@ -143,28 +129,12 @@ public class NFTSellOrder {
         this.currency = currency;
     }
     
-    public Long getNonce() {
-        return nonce;
+    public String getVaultAddress() {
+        return vaultAddress;
     }
     
-    public void setNonce(Long nonce) {
-        this.nonce = nonce;
-    }
-    
-    public Long getDeadline() {
-        return deadline;
-    }
-    
-    public void setDeadline(Long deadline) {
-        this.deadline = deadline;
-    }
-    
-    public String getSignature() {
-        return signature;
-    }
-    
-    public void setSignature(String signature) {
-        this.signature = signature;
+    public void setVaultAddress(String vaultAddress) {
+        this.vaultAddress = vaultAddress;
     }
     
     public OrderStatus getStatus() {
@@ -189,22 +159,6 @@ public class NFTSellOrder {
     
     public void setMatchedAt(Long matchedAt) {
         this.matchedAt = matchedAt;
-    }
-    
-    public String getLockedBy() {
-        return lockedBy;
-    }
-    
-    public void setLockedBy(String lockedBy) {
-        this.lockedBy = lockedBy;
-    }
-    
-    public Long getLockedAt() {
-        return lockedAt;
-    }
-    
-    public void setLockedAt(Long lockedAt) {
-        this.lockedAt = lockedAt;
     }
     
     public LocalDateTime getCreatedAt() {

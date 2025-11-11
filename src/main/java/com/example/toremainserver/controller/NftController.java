@@ -2,10 +2,12 @@ package com.example.toremainserver.controller;
 
 import com.example.toremainserver.dto.nft.NftMintClientRequest;
 import com.example.toremainserver.dto.nft.NftMintClientResponse;
-import com.example.toremainserver.dto.nft.NftBurnClientRequest;
-import com.example.toremainserver.dto.nft.NftBurnClientResponse;
 import com.example.toremainserver.dto.nft.NftListClientRequest;
 import com.example.toremainserver.dto.nft.NftListClientResponse;
+import com.example.toremainserver.dto.nft.NftLockUpRequest;
+import com.example.toremainserver.dto.nft.NftLockUpResponse;
+import com.example.toremainserver.dto.nft.NftUnlockUpRequest;
+import com.example.toremainserver.dto.nft.NftUnlockUpResponse;
 import com.example.toremainserver.service.NftService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,29 +53,6 @@ public class NftController {
     }
     
     /**
-     * UE5에서 NFT화된 아이템을 burn(삭제)하는 요청을 받아 블록체인 서버로 전달
-     * 
-     * @param request NFT burn 요청 (userId, itemId, userEquipItemId, nftId)
-     * @return NFT burn 결과 (성공여부 또는 오류 메시지)
-     */
-    @PostMapping("/nft/burn")
-    public ResponseEntity<NftBurnClientResponse> burnNft(@Valid @RequestBody NftBurnClientRequest request) {
-        try {
-            NftBurnClientResponse response = nftService.burnNft(request);
-            
-            if (response.isSuccess()) {
-                return ResponseEntity.ok(response);
-            } else {
-                return ResponseEntity.badRequest().body(response);
-            }
-            
-        } catch (Exception e) {
-            NftBurnClientResponse errorResponse = new NftBurnClientResponse(false, "서버 오류: " + e.getMessage());
-            return ResponseEntity.internalServerError().body(errorResponse);
-        }
-    }
-    
-    /**
      * UE5에서 사용자의 지갑에 있는 모든 NFT화된 아이템 목록을 조회하고 소유권을 동기화하는 요청을 받아 블록체인 서버로 전달
      * 
      * @param userId 사용자 ID
@@ -98,30 +77,51 @@ public class NftController {
     }
     
     /**
-     * 특정 지갑 주소의 NFT화된 아이템 목록 조회
-     * GET /api/nfts/user/{address}
+     * NFT를 lockUp (계정 창고로 이동)
+     * POST /api/nft/lockup
      * 
-     * @param address 지갑 주소
-     * @return NFT화된 아이템 목록
+     * @param request lockUp 요청 (userId, equipItemId)
+     * @return lockUp 결과
      */
-    @GetMapping(value = "/nft/user/{address}", produces = "application/json; charset=UTF-8")
-    public ResponseEntity<Map<String, Object>> getUserNftItems(@PathVariable String address) {
+    @PostMapping("/nft/lockup")
+    public ResponseEntity<NftLockUpResponse> lockUpNft(@Valid @RequestBody NftLockUpRequest request) {
         try {
-            List<Map<String, Object>> nftMetadataList = nftService.getUserNftItems(address);
+            NftLockUpResponse response = nftService.lockUpNft(request);
             
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", nftMetadataList);
-            response.put("count", nftMetadataList.size());
-            response.put("message", "사용자의 NFT화된 아이템 목록을 성공적으로 조회했습니다");
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
             
-            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("error", "서버 오류: " + e.getMessage());
-            
-            return ResponseEntity.internalServerError().body(response);
+            NftLockUpResponse errorResponse = NftLockUpResponse.failure("서버 오류: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
+    
+    /**
+     * NFT를 unlockUp (블록체인으로 이동)
+     * POST /api/nft/unlockup
+     * 
+     * @param request unlockUp 요청 (userId, nftId)
+     * @return unlockUp 결과
+     */
+    @PostMapping("/nft/unlockup")
+    public ResponseEntity<NftUnlockUpResponse> unlockUpNft(@Valid @RequestBody NftUnlockUpRequest request) {
+        try {
+            NftUnlockUpResponse response = nftService.unlockUpNft(request);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+        } catch (Exception e) {
+            NftUnlockUpResponse errorResponse = NftUnlockUpResponse.failure("서버 오류: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+    
 }

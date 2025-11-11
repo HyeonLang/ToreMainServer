@@ -86,10 +86,6 @@ public interface NFTSellOrderRepository extends JpaRepository<NFTSellOrder, Long
            "(s.tokenId LIKE %:query% OR s.nftContract LIKE %:query%) ORDER BY s.createdAt DESC")
     List<NFTSellOrder> searchActiveOrdersByQuery(@Param("query") String query);
     
-    // 인기 NFT 조회 (활성 주문만)
-    @Query("SELECT s FROM NFTSellOrder s WHERE s.status IN ('ACTIVE', 'LOCKED') ORDER BY s.createdAt DESC")
-    List<NFTSellOrder> findPopularActiveNFTs();
-    
     // 페이징을 위한 활성 주문 조회
     @Query("SELECT s FROM NFTSellOrder s WHERE s.status IN ('ACTIVE', 'LOCKED') ORDER BY s.createdAt DESC")
     List<NFTSellOrder> findActiveOrdersWithPaging(@Param("offset") int offset, @Param("limit") int limit);
