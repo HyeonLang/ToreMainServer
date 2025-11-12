@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "nft_sell_orders")
-public class NFTSellOrder {
+@Table(name = "nft_market_orders")
+public class NFTMarketOrder {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +34,7 @@ public class NFTSellOrder {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private OrderStatus status; // 주문 상태 (ACTIVE, LOCKED, COMPLETED, CANCELLED)
+    private OrderStatus status; // 주문 상태 (Active, SellerCancelled, Expired, Sold)
     
     @Column(name = "buyer")
     private String buyer; // 구매자 지갑 주소 (매칭 시 설정)
@@ -49,13 +49,13 @@ public class NFTSellOrder {
     private LocalDateTime updatedAt; // 주문 수정 시간
     
     // 기본 생성자
-    public NFTSellOrder() {
+    public NFTMarketOrder() {
         this.createdAt = LocalDateTime.now();
         this.status = OrderStatus.ACTIVE;
     }
     
     // 생성자
-    public NFTSellOrder(String orderId, String seller, String nftContract, String tokenId,
+    public NFTMarketOrder(String orderId, String seller, String nftContract, String tokenId,
                        String price, String currency, String vaultAddress) {
         this();
         this.orderId = orderId;
@@ -179,9 +179,10 @@ public class NFTSellOrder {
     
     // 주문 상태 열거형
     public enum OrderStatus {
-        ACTIVE,     // 활성 상태
-        LOCKED,     // 락 상태 (구매 진행 중)
-        COMPLETED,  // 완료
-        CANCELLED   // 취소
+        ACTIVE,             // 활성 상태
+        SELLER_CANCELLED,   // 판매자 취소
+        EXPIRED,            // 만료됨
+        SOLD                // 판매 완료
     }
 }
+

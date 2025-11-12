@@ -1,7 +1,6 @@
 package com.example.toremainserver;
 
 import com.example.toremainserver.dto.nft.NftMintClientRequest;
-import com.example.toremainserver.dto.nft.NftBurnClientRequest;
 import com.example.toremainserver.entity.UserEquipItem;
 import com.example.toremainserver.entity.User;
 import com.example.toremainserver.repository.UserEquipItemRepository;
@@ -37,27 +36,23 @@ public class NftTestRunner implements CommandLineRunner {
         
         System.out.println("=== NFT 테스트 프로그램 ===");
         System.out.println("1: 모든 아이템 NFT화 (민팅)");
-        System.out.println("2: 모든 NFT 버닝");
         System.out.println("0: 종료");
         System.out.println("=========================");
         
         while (true) {
-            System.out.print("선택하세요 (0-2): ");
+            System.out.print("선택하세요 (0-1): ");
             int choice = scanner.nextInt();
             
             switch (choice) {
                 case 1:
                     mintAllItems();
                     break;
-                case 2:
-                    burnAllNfts();
-                    break;
                 case 0:
                     System.out.println("프로그램을 종료합니다.");
                     scanner.close();
                     return;
                 default:
-                    System.out.println("잘못된 선택입니다. 0-2 중에서 선택하세요.");
+                    System.out.println("잘못된 선택입니다. 0-1 중에서 선택하세요.");
             }
         }
     }
@@ -128,77 +123,6 @@ public class NftTestRunner implements CommandLineRunner {
         }
         
         System.out.println("\n=== 민팅 완료 ===");
-        System.out.println("성공: " + successCount + "개");
-        System.out.println("실패: " + failCount + "개");
-        System.out.println("================\n");
-    }
-    
-    private void burnAllNfts() {
-        System.out.println("\n=== NFT 버닝 시작 ===");
-        
-        // NFT화된 모든 아이템 조회
-        List<UserEquipItem> nftItems = userEquipItemRepository.findAll()
-            .stream()
-            .filter(item -> item.getNftId() != null)
-            .toList();
-        
-        if (nftItems.isEmpty()) {
-            System.out.println("버닝할 NFT가 없습니다.");
-            return;
-        }
-        
-        System.out.println("총 " + nftItems.size() + "개의 NFT를 버닝합니다...");
-        
-        int successCount = 0;
-        int failCount = 0;
-        
-        for (UserEquipItem item : nftItems) {
-            try {
-                // 프로필 정보 조회를 통해 사용자 정보 조회
-                Optional<com.example.toremainserver.entity.UserGameProfile> profileOpt = 
-                    userGameProfileRepository.findById(item.getProfileId());
-                if (profileOpt.isEmpty()) {
-                    System.out.println("프로필 ID " + item.getProfileId() + "를 찾을 수 없습니다.");
-                    failCount++;
-                    continue;
-                }
-                
-                Long userId = profileOpt.get().getUserId();
-                Optional<User> userOpt = userRepository.findById(userId);
-                if (userOpt.isEmpty()) {
-                    System.out.println("사용자 ID " + userId + "를 찾을 수 없습니다.");
-                    failCount++;
-                    continue;
-                }
-                
-                User user = userOpt.get();
-                System.out.println("NFT ID " + item.getNftId() + " (사용자: " + user.getUsername() + ") 버닝 중...");
-                
-                // NFT 버닝 요청 생성
-                NftBurnClientRequest burnRequest = new NftBurnClientRequest(
-                    user.getWalletAddress(),
-                    item.getNftId(),
-                    "0xe05FF7e673F41B7d8272D264a2F8542642Cc1dfb" // 컨트랙트 주소
-                );
-                
-                // NFT 버닝 실행
-                var burnResponse = nftService.burnNft(burnRequest);
-                
-                if (burnResponse.isSuccess()) {
-                    System.out.println("✓ 성공: NFT ID " + item.getNftId() + " 버닝 완료");
-                    successCount++;
-                } else {
-                    System.out.println("✗ 실패: " + burnResponse.getErrorMessage());
-                    failCount++;
-                }
-                
-            } catch (Exception e) {
-                System.out.println("✗ 오류: " + e.getMessage());
-                failCount++;
-            }
-        }
-        
-        System.out.println("\n=== 버닝 완료 ===");
         System.out.println("성공: " + successCount + "개");
         System.out.println("실패: " + failCount + "개");
         System.out.println("================\n");

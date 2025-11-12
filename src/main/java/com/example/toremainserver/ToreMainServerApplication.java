@@ -84,6 +84,7 @@ public class ToreMainServerApplication {
                 ItemDefinition testItem = new ItemDefinition(
                     "강화된 검",
                     ItemDefinition.ItemType.EQUIPMENT,
+                    ItemDefinition.Category.WEAPON,
                     baseStats,
                     "강화된 강력한 검입니다."
                 );

@@ -8,6 +8,7 @@ import com.example.toremainserver.dto.nft.NftLockUpRequest;
 import com.example.toremainserver.dto.nft.NftLockUpResponse;
 import com.example.toremainserver.dto.nft.NftUnlockUpRequest;
 import com.example.toremainserver.dto.nft.NftUnlockUpResponse;
+import com.example.toremainserver.entity.UserEquipItem;
 import com.example.toremainserver.service.NftService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,6 +122,40 @@ public class NftController {
         } catch (Exception e) {
             NftUnlockUpResponse errorResponse = NftUnlockUpResponse.failure("서버 오류: " + e.getMessage());
             return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+    
+    /**
+     * 지갑 주소로 블록체인(locationId=3)에 있는 모든 equip 아이템 조회
+     * GET /api/nft/blockchain-items?walletAddress=:address
+     * 
+     * @param walletAddress 지갑 주소
+     * @return 블록체인에 있는 아이템 목록 (UserEquipItem과 ItemDefinition 포함)
+     */
+    @GetMapping("/nft/blockchain-items")
+    public ResponseEntity<Map<String, Object>> getBlockchainItems(
+            @RequestParam String walletAddress) {
+        try {
+            List<Map<String, Object>> items = nftService.getBlockchainItemsByWalletAddress(walletAddress);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", items);
+            response.put("count", items.size());
+            
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "서버 오류: " + e.getMessage());
+            
+            return ResponseEntity.internalServerError().body(response);
         }
     }
     

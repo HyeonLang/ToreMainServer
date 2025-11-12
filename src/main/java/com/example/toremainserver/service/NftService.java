@@ -490,4 +490,39 @@ public class NftService {
             return new ContractNftUnlockUpResponse(false, "블록체인 서버 통신 오류: " + e.getMessage());
         }
     }
+    
+    /**
+     * 지갑 주소로 블록체인(locationId=3)에 있는 모든 equip 아이템 조회 (ItemDefinition 포함)
+     * @param walletAddress 지갑 주소
+     * @return 블록체인에 있는 UserEquipItem과 ItemDefinition을 포함한 Map 리스트
+     */
+    public List<Map<String, Object>> getBlockchainItemsByWalletAddress(String walletAddress) {
+        // 1. walletAddress로 User 조회
+        User user = userRepository.findByWalletAddress(walletAddress);
+        if (user == null) {
+            throw new RuntimeException("지갑 주소에 해당하는 사용자를 찾을 수 없습니다: " + walletAddress);
+        }
+        
+        // 2. userId가 일치하고 locationId가 3(블록체인)인 아이템들 조회
+        List<UserEquipItem> items = userEquipItemRepository.findByUserIdAndLocationId(user.getId(), 3);
+        
+        // 3. 각 아이템의 ItemDefinition 조회하여 함께 반환
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (UserEquipItem item : items) {
+            Map<String, Object> itemData = new HashMap<>();
+            itemData.put("equipItem", item);
+            
+            // ItemDefinition 조회
+            Optional<ItemDefinition> itemDef = itemDefinitionRepository.findById(item.getItemDefId());
+            if (itemDef.isPresent()) {
+                itemData.put("itemDefinition", itemDef.get());
+            } else {
+                itemData.put("itemDefinition", null);
+            }
+            
+            result.add(itemData);
+        }
+        
+        return result;
+    }
 }

@@ -15,16 +15,17 @@ INSERT INTO item_location_types (id, code_name, display_name, description)
 VALUES 
 (1, 'PERSONAL_INV', '개인 인벤토리', '플레이어의 개인 인벤토리에 저장된 아이템'),
 (2, 'ACCOUNT_WH', '계정 창고', '계정 전체에서 공유되는 창고에 저장된 아이템'),
-(3, 'ON_CHAIN', '블록체인', '블록체인에 저장되어 인게임에서 보이지 않는 NFT 상태')
+(3, 'ON_CHAIN', '블록체인', '블록체인에 저장되어 인게임에서 보이지 않는 NFT 상태'),
+(4, 'MARKET', '마켓플레이스', '마켓플레이스 거래를 위해 Lock된 상태')
 ON DUPLICATE KEY UPDATE display_name = VALUES(display_name), description = VALUES(description);
 
 -- 아이템 정의 테이블 초기 데이터
-INSERT INTO item_definitions (item_id, name, type, base_stats, description, is_stackable, max_stack, image_url, ipfs_image_url) 
+INSERT INTO item_definitions (item_id, name, type, category, base_stats, description, is_stackable, max_stack, image_url, ipfs_image_url) 
 VALUES 
-(1, '체력 물약', 'CONSUMABLE', '{"health": 50, "duration": 0}', '체력을 50 회복시키는 물약입니다.', true, 99, '/uploads/items/health_potion.png', 'ipfs://bafkreieioitiq5xrkqzwupweupl4vitkeieww5e5nmlxttx2vmhpjnv4zq'),
-(2, '마나 물약', 'CONSUMABLE', '{"mana": 30, "duration": 0}', '마나를 30 회복시키는 물약입니다.', true, 99, '/uploads/items/mana_potion.png', 'ipfs://bafkreihr2a2irxvz3f5uvb4lxa7wmwvqeo2qfc3ezurihfxef2qtpf2l3m'),
-(3, '철검', 'EQUIPMENT', '{"attack": 15, "durability": 100}', '기본적인 철검입니다.', false, 1, '/uploads/items/iron_sword.png', 'ipfs://bafkreicqxmszqt2tcmf5aqqblokcs2uhem2e4mzbt7pvkjeiitjk5s3atu'),
-(4, '가죽 갑옷', 'EQUIPMENT', '{"health": 10, "durability": 80}', '가죽으로 만든 갑옷입니다.', false, 1, '/uploads/items/leather_armor.png', 'ipfs://bafkreidjnwybxkem2ghdhbwn23wopyldw376qfmd626quqb5zblyjummse');
+(1, '체력 물약', 'CONSUMABLE', 'POTION', '{"health": 50, "duration": 0}', '체력을 50 회복시키는 물약입니다.', true, 99, '/uploads/items/health_potion.png', 'ipfs://bafkreieioitiq5xrkqzwupweupl4vitkeieww5e5nmlxttx2vmhpjnv4zq'),
+(2, '마나 물약', 'CONSUMABLE', 'POTION', '{"mana": 30, "duration": 0}', '마나를 30 회복시키는 물약입니다.', true, 99, '/uploads/items/mana_potion.png', 'ipfs://bafkreihr2a2irxvz3f5uvb4lxa7wmwvqeo2qfc3ezurihfxef2qtpf2l3m'),
+(3, '철검', 'EQUIPMENT', 'WEAPON', '{"attack": 15, "durability": 100}', '기본적인 철검입니다.', false, 1, '/uploads/items/iron_sword.png', 'ipfs://bafkreicqxmszqt2tcmf5aqqblokcs2uhem2e4mzbt7pvkjeiitjk5s3atu'),
+(4, '가죽 갑옷', 'EQUIPMENT', 'ARMOR', '{"health": 10, "durability": 80}', '가죽으로 만든 갑옷입니다.', false, 1, '/uploads/items/leather_armor.png', 'ipfs://bafkreidjnwybxkem2ghdhbwn23wopyldw376qfmd626quqb5zblyjummse');
 
 -- 사용자 소비 아이템 테이블 초기 데이터
 INSERT INTO user_consumable_items (profile_id, item_def_id, quantity) 
@@ -35,8 +36,8 @@ VALUES
 -- 사용자 장비 아이템 테이블 초기 데이터
 INSERT INTO user_equip_items (profile_id, user_id, item_def_id, location_id, enhancement_data, nft_id) 
 VALUES 
-(1, 1, 3, 1, '{"star": 1, "attack" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 1)
-(1, 1, 4, 1, '{"star": 1, "health" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 가죽 갑옷 (level 1)
+(1, 1, 3, 3, '{"star": 1, "attack" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 1)
+(1, 1, 4, 3, '{"star": 1, "health" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 가죽 갑옷 (level 1)
 (1, 1, 3, 1, '{"star": 2, "attack" : 13, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 2)
 (1, 1, 4, 1, '{"star": 2, "health" : 9, "enhancement": 0}', NULL); -- 메인 캐릭터의 가죽 갑옷 (level 2)
 
@@ -154,9 +155,9 @@ VALUES
     "persona": "발터는 30년 경력의 베테랑 보석 세공사다. 젊은 시절 광산 노동자로 일하다가 우연히 발견한 희귀 보석으로 인생이 바뀌었다. 그 보석을 팔아 얻은 돈으로 기술을 배웠고, 이제는 왕국에서 손꼽히는 장인이 되었다. 하지만 그는 화려한 왕궁보다 이 소박한 마을을 선택했다. 왕궁의 정치와 음모가 싫었고, 순수하게 자신의 기술에 몰두하고 싶었기 때문이다. 그는 보석과 금속의 가치를 누구보다 잘 알지만, 돈보다는 자신이 만든 작품의 완성도를 더 중요하게 여긴다. 그의 작업실에는 아직 완성하지 못한 걸작이 하나 있는데, 그것을 완성하기 위해서는 전설의 용의 심장이 필요하다고 한다. 그는 매일 그 작품을 보며 언젠가 완성할 날을 꿈꾼다. 또한 그는 마법 부여된 장신구를 만드는 기술도 갖고 있어, 모험가들에게 특별한 액세서리를 제작해주기도 한다."
 }');
 
--- NFT 판매 주문 테이블 초기 데이터 (테스트용)
-INSERT INTO nft_sell_orders (order_id, seller, nft_contract, token_id, price, currency, nonce, deadline, signature, status, created_at) 
+-- NFT 마켓 주문 테이블 초기 데이터 (테스트용)
+INSERT INTO nft_market_orders (order_id, seller, nft_contract, token_id, price, currency, vault_address, status, created_at) 
 VALUES 
-('test-order-001', '0xFF5530beBE63f97f6cC80193416f890d76d65661', '0x5FbDB2315678afecb367f032d93F642f64180aa3', '300000001', '1000000000000000000', 'ETH', 1, UNIX_TIMESTAMP(DATE_ADD(NOW(), INTERVAL 7 DAY)), '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef12', 'ACTIVE', NOW()) 
+('test-order-001', '0xFF5530beBE63f97f6cC80193416f890d76d65661', '0x5FbDB2315678afecb367f032d93F642f64180aa3', '300000001', '100000000000', 'ETH', '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb0', 'ACTIVE', NOW())
 ON DUPLICATE KEY UPDATE updated_at = NOW();
 

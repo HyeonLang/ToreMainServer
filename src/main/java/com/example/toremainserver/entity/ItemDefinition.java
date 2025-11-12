@@ -21,6 +21,10 @@ public class ItemDefinition {
     @Column(name = "type", nullable = false)
     private ItemType type;
     
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
+    private Category category;
+    
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "base_stats", columnDefinition = "JSON")
     private Map<String, Object> baseStats;
@@ -57,26 +61,46 @@ public class ItemDefinition {
         }
     }
     
+    // 아이템 카테고리 enum
+    public enum Category {
+        POTION("물약"),
+        WEAPON("무기"),
+        ARMOR("방어구");
+        
+        private final String displayName;
+        
+        Category(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
+    
     // 기본 생성자
     public ItemDefinition() {}
     
     // 생성자
-    public ItemDefinition(String name, ItemType type, String description) {
+    public ItemDefinition(String name, ItemType type, Category category, String description) {
         this.name = name;
         this.type = type;
+        this.category = category;
         this.description = description;
     }
     
-    public ItemDefinition(String name, ItemType type, Map<String, Object> baseStats, String description) {
+    public ItemDefinition(String name, ItemType type, Category category, Map<String, Object> baseStats, String description) {
         this.name = name;
         this.type = type;
+        this.category = category;
         this.baseStats = baseStats;
         this.description = description;
     }
     
-    public ItemDefinition(String name, ItemType type, Map<String, Object> baseStats, String description, String imageUrl, String ipfsImageUrl) {
+    public ItemDefinition(String name, ItemType type, Category category, Map<String, Object> baseStats, String description, String imageUrl, String ipfsImageUrl) {
         this.name = name;
         this.type = type;
+        this.category = category;
         this.baseStats = baseStats;
         this.description = description;
         this.imageUrl = imageUrl;
@@ -106,6 +130,14 @@ public class ItemDefinition {
     
     public void setType(ItemType type) {
         this.type = type;
+    }
+    
+    public Category getCategory() {
+        return category;
+    }
+    
+    public void setCategory(Category category) {
+        this.category = category;
     }
     
     public Map<String, Object> getBaseStats() {

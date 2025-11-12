@@ -19,6 +19,9 @@ public interface UserEquipItemRepository extends JpaRepository<UserEquipItem, Lo
     // userId로 장비 아이템 조회
     List<UserEquipItem> findByUserId(Long userId);
     
+    // userId와 locationId로 장비 아이템 조회
+    List<UserEquipItem> findByUserIdAndLocationId(Long userId, Integer locationId);
+    
     // 여러 프로필 ID로 장비 아이템 조회
     List<UserEquipItem> findByProfileIdIn(List<Long> profileIds);
     
