@@ -443,7 +443,7 @@ public class NftService {
             
             HttpEntity<ContractNftLockUpRequest> entity = new HttpEntity<>(request, headers);
             
-            String url = blockchainServerUrl + "/api/blockchain/nft/lockup";
+            String url = blockchainServerUrl + "/api/nft/lockup";
             ResponseEntity<ContractNftLockUpResponse> response = restTemplate.postForEntity(
                 url, entity, ContractNftLockUpResponse.class);
             
@@ -472,7 +472,7 @@ public class NftService {
             
             HttpEntity<ContractNftUnlockUpRequest> entity = new HttpEntity<>(request, headers);
             
-            String url = blockchainServerUrl + "/api/blockchain/nft/unlockup";
+            String url = blockchainServerUrl + "/api/nft/unlockup";
             ResponseEntity<ContractNftUnlockUpResponse> response = restTemplate.postForEntity(
                 url, entity, ContractNftUnlockUpResponse.class);
             
@@ -524,5 +524,49 @@ public class NftService {
         }
         
         return result;
+    }
+    
+    /**
+     * NftVault 이벤트 리스너용: tokenId로 NFT 소유권 갱신
+     * @param tokenId NFT 토큰 ID
+     * @param newOwnerWalletAddress 새로운 소유자의 지갑 주소 (null 가능)
+     * @return 갱신 성공 여부
+     */
+    public boolean updateNftByNftVaultEvent(String tokenId, String newOwnerWalletAddress) {
+        try {
+            // 1. tokenId로 UserEquipItem 조회
+            Optional<UserEquipItem> userEquipItemOpt = userEquipItemRepository.findByNftId(tokenId);
+            
+            if (userEquipItemOpt.isEmpty()) {
+                logger.warn("NFT를 찾을 수 없습니다: tokenId={}", tokenId);
+                return false;
+            }
+            
+            UserEquipItem userEquipItem = userEquipItemOpt.get();
+            
+            // 2. 새로운 소유자 정보가 제공된 경우 userId 갱신
+            if (newOwnerWalletAddress != null && !newOwnerWalletAddress.trim().isEmpty()) {
+                User newOwner = userRepository.findByWalletAddress(newOwnerWalletAddress);
+                if (newOwner != null) {
+                    userEquipItem.setUserId(newOwner.getId());
+                    logger.info("NFT 소유권 갱신: tokenId={}, newOwner={}", tokenId, newOwnerWalletAddress);
+                } else {
+                    logger.warn("새로운 소유자를 찾을 수 없습니다: walletAddress={}", newOwnerWalletAddress);
+                    // userId를 null로 설정 (소유자가 DB에 없는 경우)
+                    userEquipItem.setUserId(null);
+                }
+            }
+            
+            // 3. locationId를 3(블록체인)으로 설정 (NftVault 이벤트는 블록체인으로 전송된 경우)
+            userEquipItem.setLocationId(3);
+            
+            // 4. 저장
+            userEquipItemRepository.save(userEquipItem);
+            
+            return true;
+        } catch (Exception e) {
+            logger.error("NFT 소유권 갱신 중 오류 발생: tokenId={}", tokenId, e);
+            return false;
+        }
     }
 }

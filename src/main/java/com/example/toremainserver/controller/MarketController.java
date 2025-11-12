@@ -111,4 +111,48 @@ public class MarketController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+    
+    // ==================== 이벤트 리스너 API ====================
+    
+    /**
+     * MarketplaceVault 이벤트 리스너용 DB 갱신 API
+     * POST /api/market/vault-event
+     * 
+     * @param request 이벤트 요청 (tokenId, buyerWalletAddress)
+     * @return DB 갱신 결과
+     */
+    @PostMapping("/market/vault-event")
+    public ResponseEntity<Map<String, Object>> handleMarketplaceVaultEvent(
+            @RequestBody Map<String, String> request) {
+        try {
+            String tokenId = request.get("tokenId");
+            String buyerWalletAddress = request.get("buyerWalletAddress");
+            
+            if (tokenId == null || tokenId.trim().isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("error", "tokenId는 필수입니다");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            boolean result = marketService.updateMarketOrderByMarketplaceVaultEvent(tokenId, buyerWalletAddress);
+            
+            Map<String, Object> response = new HashMap<>();
+            if (result) {
+                response.put("success", true);
+                response.put("message", "마켓플레이스 주문이 성공적으로 갱신되었습니다");
+            } else {
+                response.put("success", false);
+                response.put("error", "주문을 찾을 수 없거나 갱신에 실패했습니다");
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "서버 오류: " + e.getMessage());
+            
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
 }

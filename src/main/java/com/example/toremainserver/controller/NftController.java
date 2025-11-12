@@ -159,4 +159,46 @@ public class NftController {
         }
     }
     
+    /**
+     * NftVault 이벤트 리스너용 DB 갱신 API
+     * POST /api/nft/vault-event
+     * 
+     * @param request 이벤트 요청 (tokenId, newOwnerWalletAddress)
+     * @return DB 갱신 결과
+     */
+    @PostMapping("/nft/vault-event")
+    public ResponseEntity<Map<String, Object>> handleNftVaultEvent(
+            @RequestBody Map<String, String> request) {
+        try {
+            String tokenId = request.get("tokenId");
+            String newOwnerWalletAddress = request.get("newOwnerWalletAddress");
+            
+            if (tokenId == null || tokenId.trim().isEmpty()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("error", "tokenId는 필수입니다");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            boolean result = nftService.updateNftByNftVaultEvent(tokenId, newOwnerWalletAddress);
+            
+            Map<String, Object> response = new HashMap<>();
+            if (result) {
+                response.put("success", true);
+                response.put("message", "NFT 소유권이 성공적으로 갱신되었습니다");
+            } else {
+                response.put("success", false);
+                response.put("error", "NFT를 찾을 수 없거나 소유권 갱신에 실패했습니다");
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "서버 오류: " + e.getMessage());
+            
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+    
 }

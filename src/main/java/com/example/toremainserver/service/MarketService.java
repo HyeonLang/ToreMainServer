@@ -5,6 +5,8 @@ import com.example.toremainserver.entity.NFTMarketOrder;
 import com.example.toremainserver.entity.UserEquipItem;
 import com.example.toremainserver.entity.ItemDefinition;
 import com.example.toremainserver.repository.NFTMarketOrderRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class MarketService {
+    private static final Logger logger = LoggerFactory.getLogger(MarketService.class);
     
     @Autowired
     private NFTMarketOrderRepository marketOrderRepository;
@@ -180,5 +183,18 @@ public class MarketService {
         }
         
         return results;
+    }
+    
+    // ==================== 이벤트 리스너 메서드 ====================
+    
+    /**
+     * MarketplaceVault 이벤트 리스너용: tokenId로 마켓플레이스 주문 갱신
+     * @param tokenId NFT 토큰 ID
+     * @param buyerWalletAddress 구매자 지갑 주소 (null 가능)
+     * @return 갱신 성공 여부
+     */
+    public boolean updateMarketOrderByMarketplaceVaultEvent(String tokenId, String buyerWalletAddress) {
+        // TODO: 구현 필요
+        return false;
     }
 }

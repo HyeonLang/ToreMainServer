@@ -54,6 +54,9 @@ public interface NFTMarketOrderRepository extends JpaRepository<NFTMarketOrder, 
     // NFT 컨트랙트와 토큰 ID로 조회
     List<NFTMarketOrder> findByNftContractAndTokenId(String nftContract, String tokenId);
     
+    // 토큰 ID로 조회
+    List<NFTMarketOrder> findByTokenId(String tokenId);
+    
     // 통화별 조회
     List<NFTMarketOrder> findByStatusAndCurrency(NFTMarketOrder.OrderStatus status, String currency);
     
