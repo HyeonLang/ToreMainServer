@@ -36,8 +36,8 @@ VALUES
 -- 사용자 장비 아이템 테이블 초기 데이터
 INSERT INTO user_equip_items (profile_id, user_id, item_def_id, location_id, enhancement_data, nft_id) 
 VALUES 
-(1, 1, 3, 3, '{"star": 1, "attack" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 1)
-(1, 1, 4, 3, '{"star": 1, "health" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 가죽 갑옷 (level 1)
+(1, 1, 3, 1, '{"star": 1, "attack" : 10, "enhancement": 0}', '300000006'), -- 메인 캐릭터의 철검 (level 1)
+(1, 1, 4, 1, '{"star": 1, "health" : 10, "enhancement": 0}', NULL), -- 메인 캐릭터의 가죽 갑옷 (level 1)
 (1, 1, 3, 1, '{"star": 2, "attack" : 13, "enhancement": 0}', NULL), -- 메인 캐릭터의 철검 (level 2)
 (1, 1, 4, 1, '{"star": 2, "health" : 9, "enhancement": 0}', NULL); -- 메인 캐릭터의 가죽 갑옷 (level 2)
 

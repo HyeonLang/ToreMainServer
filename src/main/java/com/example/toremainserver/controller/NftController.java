@@ -81,7 +81,7 @@ public class NftController {
      * NFT를 lockUp (계정 창고로 이동)
      * POST /api/nft/lockup
      * 
-     * @param request lockUp 요청 (userId, equipItemId)
+     * @param request lockUp 요청 (walletAddress, nftId)
      * @return lockUp 결과
      */
     @PostMapping("/nft/lockup")
@@ -105,7 +105,7 @@ public class NftController {
      * NFT를 unlockUp (블록체인으로 이동)
      * POST /api/nft/unlockup
      * 
-     * @param request unlockUp 요청 (userId, nftId)
+     * @param request unlockUp 요청 (userId, equipItemId)
      * @return unlockUp 결과
      */
     @PostMapping("/nft/unlockup")

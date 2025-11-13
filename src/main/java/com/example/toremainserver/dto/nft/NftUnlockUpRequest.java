@@ -1,7 +1,6 @@
 package com.example.toremainserver.dto.nft;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 
 public class NftUnlockUpRequest {
@@ -10,16 +9,17 @@ public class NftUnlockUpRequest {
     @Positive(message = "사용자 ID는 양수여야 합니다")
     private Long userId;
     
-    @NotBlank(message = "NFT ID(토큰 ID)는 필수입니다")
-    private String nftId;
+    @NotNull(message = "장비 아이템 ID는 필수입니다")
+    @Positive(message = "장비 아이템 ID는 양수여야 합니다")
+    private Long equipItemId;
     
     // 기본 생성자
     public NftUnlockUpRequest() {}
     
     // 생성자
-    public NftUnlockUpRequest(Long userId, String nftId) {
+    public NftUnlockUpRequest(Long userId, Long equipItemId) {
         this.userId = userId;
-        this.nftId = nftId;
+        this.equipItemId = equipItemId;
     }
     
     // Getter와 Setter
@@ -31,12 +31,12 @@ public class NftUnlockUpRequest {
         this.userId = userId;
     }
     
-    public String getNftId() {
-        return nftId;
+    public Long getEquipItemId() {
+        return equipItemId;
     }
     
-    public void setNftId(String nftId) {
-        this.nftId = nftId;
+    public void setEquipItemId(Long equipItemId) {
+        this.equipItemId = equipItemId;
     }
 }
 

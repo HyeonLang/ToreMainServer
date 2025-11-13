@@ -1,42 +1,39 @@
 package com.example.toremainserver.dto.nft;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotBlank;
 
 public class NftLockUpRequest {
     
-    @NotNull(message = "사용자 ID는 필수입니다")
-    @Positive(message = "사용자 ID는 양수여야 합니다")
-    private Long userId;
+    @NotBlank(message = "지갑 주소는 필수입니다")
+    private String walletAddress;
     
-    @NotNull(message = "장비 아이템 ID는 필수입니다")
-    @Positive(message = "장비 아이템 ID는 양수여야 합니다")
-    private Long equipItemId;
+    @NotBlank(message = "NFT ID(Token ID)는 필수입니다")
+    private String nftId;
     
     // 기본 생성자
     public NftLockUpRequest() {}
     
     // 생성자
-    public NftLockUpRequest(Long userId, Long equipItemId) {
-        this.userId = userId;
-        this.equipItemId = equipItemId;
+    public NftLockUpRequest(String walletAddress, String nftId) {
+        this.walletAddress = walletAddress;
+        this.nftId = nftId;
     }
     
     // Getter와 Setter
-    public Long getUserId() {
-        return userId;
+    public String getWalletAddress() {
+        return walletAddress;
     }
     
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setWalletAddress(String walletAddress) {
+        this.walletAddress = walletAddress;
     }
     
-    public Long getEquipItemId() {
-        return equipItemId;
+    public String getNftId() {
+        return nftId;
     }
     
-    public void setEquipItemId(Long equipItemId) {
-        this.equipItemId = equipItemId;
+    public void setNftId(String nftId) {
+        this.nftId = nftId;
     }
 }
 
